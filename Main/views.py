@@ -7,6 +7,7 @@
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments
 import json
+from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
@@ -192,7 +193,7 @@ def get_news_by_status(request):
         # 当status 为 0 时，监测是否登陆
         if sta == 0:
             if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/')
+                return HttpResponseRedirect('/login/?next=' + request.path)
         status, news = News.get_news_by_status(status=sta)
         if status:
             data = []
@@ -218,6 +219,197 @@ def get_news_by_status(request):
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
+
+
+# 增加新的新闻内容
+@csrf_exempt
+def add_news(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            title = request.POST['title']
+            content = request.POST['content']
+            origin = request.POST['origin']
+            date = request.POST['date']
+            time = request.POST['time']
+            labels = request.POST['labels']
+            poster = None
+            if 'poster' in request.POST.keys():
+                poster = request.POST['poster']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if poster is not None:
+                sta, id = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels,
+                                      poster=poster)
+            else:
+                sta, id = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'id': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改新闻内容
+@csrf_exempt
+def alter_news(request):
+    """/news/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            nid = int(request.POST['nid'])
+            title = request.POST['title']
+            content = request.POST['content']
+            origin = request.POST['origin']
+            date = request.POST['date']
+            time = request.POST['time']
+            labels = request.POST['labels']
+            poster = None
+            if 'poster' in request.POST.keys():
+                poster = request.POST['poster']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if poster is not None:
+                sta, message = News.update(id=nid, title=title, content=content, origin=origin, date=date, time=time,
+                                           labels=labels,
+                                           poster=poster)
+            else:
+                sta, message = News.update(id=nid, title=title, content=content, origin=origin, date=date, time=time,
+                                           labels=labels)
+            rtu = {
+                'status': sta,
+                'message': message,
+                'data': {
+                    'id': nid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改新闻状态
+@csrf_exempt
+def alter_status(request):
+    """/news/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            nid = int(request.POST['nid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, new = News.get_news_by_id(id=nid)
+            if sta:
+                if new.status == 0:
+                    sta, message = News.update(id=nid, status=1)
+                else:
+                    sta, message = News.update(id=nid, status=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'id': nid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': new
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除新闻
+@csrf_exempt
+def delete_news(request):
+    """/news/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            nid = int(request.POST['nid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, new = News.delete_news_by_id(id=nid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': new,
+                    'data': {
+                        'id': nid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': new
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
 
 
 # 判断用户是否登录

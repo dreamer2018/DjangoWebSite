@@ -6,6 +6,7 @@ import urllib2
 import urllib
 from django.http import HttpResponse, HttpResponseRedirect
 import cookielib
+import json
 
 VERSION = "0.1"
 GET_AUTH_CODE_URL = "https://sso.xiyoulinux.org/oauth/authorize"
@@ -26,6 +27,8 @@ def oauth_login(request):
         state = ''.join(random.sample(string.ascii_letters + string.digits, 8))
         # 持久化 state ， 用于后续验证
         request.session['state'] = state
+        if 'next' in request.GET.keys():
+            request.session['next'] = request.GET['next']
         # 参数拼接
         request_data = {
             "response_type": "code",
@@ -41,12 +44,16 @@ def oauth_login(request):
     else:
         # 判断state是否为伪造的，并检测code字段是否存在
         if request.session['state'] == request.GET['state'] and 'code' in request.GET.keys():
-            return oauth_callback(request)
+            next = None
+            if 'next' in request.session.keys():
+                next = request.session['next']
+                request.session['next'] = None
+            return oauth_callback(request, next)
         else:
             return HttpResponseRedirect(request.path)
 
 
-def oauth_callback(request):
+def oauth_callback(request, next=None):
     # 获取code
     code = request.GET['code']
     # 参数拼接
@@ -74,18 +81,29 @@ def oauth_callback(request):
     dic = eval(data)
     # 获取access_token
     access_token = dic['access_token']
-    # 获取用户信息
-    return get_user_info(access_token)
+    request.session['access_token'] = access_token
+    get_user_info(request)
+    if next is not None:
+        return HttpResponseRedirect(next)
+    rtu = {
+        'status': True,
+        'message': 'login success'
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
 
 
-def get_user_info(access_token):
+def get_user_info(request):
+    access_token = request.session['access_token']
     data = {
         'access_token': access_token
     }
     url = combine_url(GET_USER_INFO_URL, data)
     params = urllib.unquote(url)
     response = urllib.urlopen(params)
-    return HttpResponse(response.read())
+    dict = json.loads(response.read())
+    request.session['user'] = dict['id']
+    request.session['login'] = True
 
 
 # 拼接url

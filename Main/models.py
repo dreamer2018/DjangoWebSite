@@ -21,6 +21,7 @@ class Anonymous(models.Model):
         anonymous.nickname = nickname
         anonymous.email = email
         anonymous.save()
+        return True, anonymous.id
 
     @staticmethod
     def get_anonymous_by_id(id):
@@ -91,6 +92,7 @@ class Events(models.Model):
         if status is not None:
             events.status = status
         events.save()
+        return True, events.id
 
     @staticmethod
     def get_events_by_id(id):
@@ -173,6 +175,7 @@ class Feedback(models.Model):
         if status is not None:
             feedback.status = status
         feedback.save()
+        return True, feedback.id
 
     @staticmethod
     def get_feedback_by_id(id):
@@ -253,6 +256,7 @@ class News(models.Model):
         if status is not None:
             new.status = status
         new.save()
+        return True, new.id
 
     @staticmethod
     def get_all_news():
@@ -263,7 +267,7 @@ class News(models.Model):
         try:
             new = News.objects.get(id=id)
         except News.DoesNotExist:
-            return False, "Not Found！"
+            return False, "Not Found!"
         else:
             return True, new
 
@@ -303,11 +307,12 @@ class News(models.Model):
             new.poster = poster
         if status is not None:
             new.status = status
+        new.save()
         return True, "update success!"
 
     @staticmethod
     def delete_news_by_id(id):
-        status, new = News.objects.get(id=id)
+        status, new = News.get_news_by_id(id=id)
         if not status:
             return False, new
         new.delete()
@@ -336,6 +341,7 @@ class Pictures(models.Model):
         if status is not None:
             picture.status = status
         picture.save()
+        return True, picture.id
 
     @staticmethod
     def get_picture_by_id(id):
@@ -411,6 +417,7 @@ class Projects(models.Model):
         project.upvote = upvote
         project.status = status
         project.save()
+        return True, project.id
 
     @staticmethod
     def get_project_by_id(id):
@@ -493,6 +500,7 @@ class Comments(models.Model):
         comment.deal = deal
         comment.status = status
         comment.save()
+        return True, comment.id
 
     @staticmethod
     def get_comment_by_id(id):
