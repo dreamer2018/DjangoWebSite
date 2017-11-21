@@ -322,7 +322,7 @@ def alter_news(request):
 
 # 更改新闻状态
 @csrf_exempt
-def alter_status(request):
+def alter_news_status(request):
     """/news/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
@@ -340,14 +340,16 @@ def alter_status(request):
             sta, new = News.get_news_by_id(id=nid)
             if sta:
                 if new.status == 0:
+                    new.status = 1
                     sta, message = News.update(id=nid, status=1)
                 else:
+                    new.status = 0
                     sta, message = News.update(id=nid, status=0)
                 rtu = {
                     'status': sta,
                     'message': message,
                     'data': {
-                        'id': nid
+                        'status': new.status
                     }
                 }
                 js = json.dumps(rtu)
@@ -412,7 +414,397 @@ def delete_news(request):
         return HttpResponse(js)
 
 
-# 判断用户是否登录
+# 获取活动信息
+def get_events(request):
+    """/events/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_events(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_events_by_id(request)
+            if 'title' in request.GET.keys():
+                return get_events_by_title(request)
+            if 'status' in request.GET.keys():
+                return get_events_by_status(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有的新闻
+def get_all_events(request):
+    """/events"""
+    status, events = Events.get_all_events()
+    if status:
+        data = []
+        for item in events:
+            dic = {
+                'title': item.title,
+                'content': item.content,
+                'origin': item.origin,
+                'poster': item.poster,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'address': item.address,
+                'labels': item.labels,
+                'reader': item.reader,
+                'upvote': item.upvote,
+                'enroll': item.enroll,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'total_count': len(events),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取活动内容
+def get_events_by_id(request):
+    """/events/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, events = Events.get_events_by_id(id)
+        if status:
+            data = {
+                'title': events.title,
+                'content': events.content,
+                'origin': events.origin,
+                'poster': events.poster,
+                'date': events.date.strftime('%Y-%m-%d'),
+                'time': events.time.strftime('%H:%M:%S'),
+                'address': events.address,
+                'labels': events.labels,
+                'reader': events.reader,
+                'upvote': events.upvote,
+                'enroll': events.enroll,
+                'status': events.status
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过title获取活动内容
+def get_events_by_title(request):
+    """/events/{title}"""
+    title = request.GET['title']
+    status, events = Events.get_events_by_title(title=title)
+    if status:
+        data = []
+        for item in events:
+            dic = {
+                'title': item.title,
+                'content': item.content,
+                'origin': item.origin,
+                'poster': item.poster,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'address': item.address,
+                'labels': item.labels,
+                'reader': item.reader,
+                'upvote': item.upvote,
+                'enroll': item.enroll,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'total_count': len(events),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过status获取活动内容
+def get_events_by_status(request):
+    """/events/{status}"""
+    try:
+        str_status = request.GET['status']
+        sta = int(str_status)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        # 当status 为 0 时，监测是否登陆
+        if sta == 0:
+            if not is_login(request)[0]:
+                return HttpResponseRedirect('/login/?next=' + request.path)
+        status, events = Events.get_events_by_status(status=sta)
+        if status:
+            data = []
+            for item in events:
+                dic = {
+                    'title': item.title,
+                    'content': item.content,
+                    'origin': item.origin,
+                    'poster': item.poster,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'address': item.address,
+                    'labels': item.labels,
+                    'reader': item.reader,
+                    'upvote': item.upvote,
+                    'enroll': item.enroll,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'total_count': len(events),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的新闻内容
+@csrf_exempt
+def add_events(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            title = request.POST['title']
+            content = request.POST['content']
+            origin = request.POST['origin']
+            date = request.POST['date']
+            time = request.POST['time']
+            address = request.POST['address']
+            labels = request.POST['labels']
+            poster = None
+            if 'poster' in request.POST.keys():
+                poster = request.POST['poster']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if poster is not None:
+                sta, id = Events.insert(title=title, content=content, origin=origin, date=date, time=time,
+                                        labels=labels, address=address, poster=poster)
+            else:
+                sta, id = Events.insert(title=title, content=content, origin=origin, date=date, time=time,
+                                        address=address, labels=labels)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'id': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+        # 更改新闻内容
+
+
+@csrf_exempt
+def alter_events(request):
+    """/events/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+            title = request.POST['title']
+            content = request.POST['content']
+            origin = request.POST['origin']
+            date = request.POST['date']
+            time = request.POST['time']
+            labels = request.POST['labels']
+            address = request.POST['address']
+            poster = None
+            if 'poster' in request.POST.keys():
+                poster = request.POST['poster']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if poster is not None:
+                sta, message = Events.update(id=eid, title=title, content=content, origin=origin, date=date,
+                                             time=time, labels=labels, address=address, poster=poster)
+            else:
+                sta, message = Events.update(id=eid, title=title, content=content, origin=origin, date=date,
+                                             time=time, address=address, labels=labels)
+            rtu = {
+                'status': sta,
+                'message': message,
+                'data': {
+                    'id': eid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改新闻状态
+@csrf_exempt
+def alter_events_status(request):
+    """/events/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, events = Events.get_events_by_id(id=eid)
+            if sta:
+                if events.status == 0:
+                    events.status = 1
+                    sta, message = Events.update(id=eid, status=1)
+                else:
+                    events.status = 0
+                    sta, message = Events.update(id=eid, status=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': events.status
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': events
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除新闻
+@csrf_exempt
+def delete_events(request):
+    """/events/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, events = Events.delete_events_by_id(id=eid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': events,
+                    'data': {
+                        'id': eid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': events
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)  # 判断用户是否登录
+
+
 def is_login(request):
     if 'login' in request.session.keys() and request.session['login']:
         return True, request.session['user']

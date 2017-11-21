@@ -95,6 +95,10 @@ class Events(models.Model):
         return True, events.id
 
     @staticmethod
+    def get_all_events():
+        return True, Events.objects.all()
+
+    @staticmethod
     def get_events_by_id(id):
         try:
             event = Events.objects.get(id=id)
@@ -106,19 +110,19 @@ class Events(models.Model):
     @staticmethod
     def get_events_by_title(title):
         events = Events.objects.filter(title=title)
-        return events
+        return True, events
 
     @staticmethod
     def get_events_by_status(status):
         events = Events.objects.filter(status=status)
-        return events
+        return True, events
 
     @staticmethod
     def update(id, title=None, content=None, origin=None, date=None, time=None, address=None, labels=None, reader=None,
                upvote=None, enroll=None, poster=None, status=None):
-        status, event = Events.get_events_by_id(id=id)
-        if not status:
-            return status, event
+        sta, event = Events.get_events_by_id(id=id)
+        if not sta:
+            return sta, event
         if title is not None:
             event.title = title
         if content is not None:
@@ -564,4 +568,72 @@ class Comments(models.Model):
         if not sta:
             return False, comment
         comment.delete()
+        return True, "delete success"
+
+
+class Enrolled(models.Model):
+    obj = models.IntegerField()  # 报名对象
+    uid = models.IntegerField()  # 报名者id
+    date = models.DateField()  # 日期
+    time = models.TimeField()  # 时间
+    status = models.IntegerField(default=0)
+
+    def __unicode__(self):
+        return self.id
+
+    @staticmethod
+    def insert(obj, uid, date, time, status=None):
+        enrolled = Enrolled()
+        enrolled.obj = obj
+        enrolled.uid = uid
+        enrolled.date = date
+        enrolled.time = time
+        if status is not None:
+            enrolled.status = status
+        enrolled.save()
+        return True, enrolled.id
+
+    @staticmethod
+    def get_enrolled_by_id(id):
+        try:
+            enrolled = Enrolled.objects.get(id=id)
+        except Enrolled.DoesNotExist:
+            return False, "Not Found！"
+        else:
+            return True, enrolled
+
+    @staticmethod
+    def get_enrolled_by_obj(obj):
+        enrolleds = Enrolled.objects.filter(obj=obj)
+        return enrolleds
+
+    @staticmethod
+    def get_enrolled_by_status(status):
+        enrolled = Enrolled.objects.filter(status=status)
+        return enrolled
+
+    @staticmethod
+    def update(id, obj, uid, date, time, status=None):
+        sta, enrolled = Enrolled.get_enrolled_by_id(id)
+        if not sta:
+            return sta, enrolled
+        if obj is not None:
+            enrolled.obj = obj
+        if uid is not None:
+            enrolled.uid = uid
+        if date is not None:
+            enrolled.date = date
+        if time is not None:
+            enrolled.time = time
+        if status is not None:
+            enrolled.status = status
+        enrolled.save()
+        return True, "update success!"
+
+    @staticmethod
+    def delete_enrolled_by_id(id):
+        sta, enrolled = Enrolled.objects.get(id=id)
+        if not sta:
+            return False, enrolled
+        enrolled.delete()
         return True, "delete success"
