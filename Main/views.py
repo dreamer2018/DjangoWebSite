@@ -805,6 +805,388 @@ def delete_events(request):
         return HttpResponse(js)  # 判断用户是否登录
 
 
+#####################################################################
+
+# 获取项目信息
+def get_projects(request):
+    """/projects/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_projects(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_projects_by_id(request)
+            if 'title' in request.GET.keys():
+                return get_projects_by_title(request)
+            if 'status' in request.GET.keys():
+                return get_projects_by_status(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有的项目信息
+def get_all_projects(request):
+    """/projects"""
+    status, projects = Projects.get_all_projects()
+    if status:
+        data = []
+        for item in projects:
+            dic = {
+                'title': item.title,
+                'content': item.content,
+                'origin': item.origin,
+                'poster': item.poster,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'reader': item.reader,
+                'upvote': item.upvote,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'total_count': len(projects),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取项目内容
+def get_projects_by_id(request):
+    """/projects/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, projects = Projects.get_project_by_id(id)
+        if status:
+            data = {
+                'title': projects.title,
+                'content': projects.content,
+                'origin': projects.origin,
+                'poster': projects.poster,
+                'date': projects.date.strftime('%Y-%m-%d'),
+                'time': projects.time.strftime('%H:%M:%S'),
+                'reader': projects.reader,
+                'upvote': projects.upvote,
+                'status': projects.status
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过title获取项目内容
+def get_projects_by_title(request):
+    """/projects/{title}"""
+    title = request.GET['title']
+    status, projects = Projects.get_projects_by_title(title=title)
+    if status:
+        data = []
+        for item in projects:
+            dic = {
+                'title': item.title,
+                'content': item.content,
+                'origin': item.origin,
+                'poster': item.poster,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'reader': item.reader,
+                'upvote': item.upvote,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'total_count': len(projects),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过status获取项目内容
+def get_projects_by_status(request):
+    """/projects/{status}"""
+    try:
+        str_status = request.GET['status']
+        sta = int(str_status)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        # 当status 为 0 时，监测是否登陆
+        if sta == 0:
+            if not is_login(request)[0]:
+                return HttpResponseRedirect('/login/?next=' + request.path)
+        status, projects = Projects.get_projects_by_status(status=sta)
+        if status:
+            data = []
+            for item in projects:
+                dic = {
+                    'title': item.title,
+                    'content': item.content,
+                    'origin': item.origin,
+                    'poster': item.poster,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'reader': item.reader,
+                    'upvote': item.upvote,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'total_count': len(projects),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的项目
+@csrf_exempt
+def add_projects(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            title = request.POST['title']
+            content = request.POST['content']
+            origin = request.POST['origin']
+            date = request.POST['date']
+            time = request.POST['time']
+            address = request.POST['address']
+            labels = request.POST['labels']
+            poster = None
+            if 'poster' in request.POST.keys():
+                poster = request.POST['poster']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if poster is not None:
+                sta, id = projects.insert(title=title, content=content, origin=origin, date=date, time=time,
+                                        labels=labels, address=address, poster=poster)
+            else:
+                sta, id = projects.insert(title=title, content=content, origin=origin, date=date, time=time,
+                                        address=address, labels=labels)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'id': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+        # 更改新闻内容
+
+
+@csrf_exempt
+def alter_projects(request):
+    """/projects/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+            title = request.POST['title']
+            content = request.POST['content']
+            origin = request.POST['origin']
+            date = request.POST['date']
+            time = request.POST['time']
+            labels = request.POST['labels']
+            address = request.POST['address']
+            poster = None
+            if 'poster' in request.POST.keys():
+                poster = request.POST['poster']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if poster is not None:
+                sta, message = projects.update(id=eid, title=title, content=content, origin=origin, date=date,
+                                             time=time, labels=labels, address=address, poster=poster)
+            else:
+                sta, message = projects.update(id=eid, title=title, content=content, origin=origin, date=date,
+                                             time=time, address=address, labels=labels)
+            rtu = {
+                'status': sta,
+                'message': message,
+                'data': {
+                    'id': eid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改新闻状态
+@csrf_exempt
+def alter_projects_status(request):
+    """/projects/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, projects = projects.get_projects_by_id(id=eid)
+            if sta:
+                if projects.status == 0:
+                    projects.status = 1
+                    sta, message = projects.update(id=eid, status=1)
+                else:
+                    projects.status = 0
+                    sta, message = projects.update(id=eid, status=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': projects.status
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': projects
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除新闻
+@csrf_exempt
+def delete_projects(request):
+    """/projects/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, projects = projects.delete_projects_by_id(id=eid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': projects,
+                    'data': {
+                        'id': eid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': projects
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)  # 判断用户是否登录
+
+
+
 def is_login(request):
     if 'login' in request.session.keys() and request.session['login']:
         return True, request.session['user']

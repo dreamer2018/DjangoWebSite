@@ -103,7 +103,7 @@ class Events(models.Model):
         try:
             event = Events.objects.get(id=id)
         except Events.DoesNotExist:
-            return False, "Not Found！"
+            return False, "Not Found!"
         else:
             return True, event
 
@@ -422,6 +422,11 @@ class Projects(models.Model):
         project.status = status
         project.save()
         return True, project.id
+
+    @staticmethod
+    def get_all_projects():
+        projects = Projects.objects.all()
+        return True, projects
 
     @staticmethod
     def get_project_by_id(id):
