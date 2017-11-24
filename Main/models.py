@@ -395,10 +395,12 @@ class Pictures(models.Model):
 
 
 class Projects(models.Model):
+    gid = models.IntegerField()  # 项目组id
     title = models.CharField(max_length=50)  # 项目标题
     content = models.TextField()  # 项目内容描述
     origin = models.TextField()  # 项目源内容
     poster = models.CharField(max_length=255)  # 项目标志
+    link = models.CharField(max_length=255) # 项目链接
     date = models.DateField()  # 日期
     time = models.TimeField()  # 时间
     reader = models.IntegerField(default=0)  # 阅读量
@@ -409,17 +411,18 @@ class Projects(models.Model):
         return self.title
 
     @staticmethod
-    def insert(title, content, origin, poster, date, time, reader, upvote, status):
+    def insert(gid, title, content, origin, poster, link, date, time):
         project = Pictures()
+        project.gid = gid
         project.title = title
         project.content = content
         project.origin = origin
         project.poster = poster
+        project.link = link
         project.date = date
         project.time = time
         project.reader = reader
         project.upvote = upvote
-        project.status = status
         project.save()
         return True, project.id
 
@@ -448,11 +451,13 @@ class Projects(models.Model):
         return project
 
     @staticmethod
-    def update(id, title=None, content=None, origin=None, poster=None, date=None, time=None, reader=None, upvote=None,
+    def update(id, gid=None, title=None, content=None, origin=None, poster=None, link=None, date=None, time=None, reader=None, upvote=None,
                status=None):
         sta, project = Projects.get_project_by_id(id)
         if not sta:
             return sta, project
+        if gid is not None:
+            project.gid = gid
         if title is not None:
             project.title = title
         if content is not None:
@@ -461,6 +466,8 @@ class Projects(models.Model):
             project.origin = origin
         if poster is not None:
             project.poster = poster
+        if link is not None:
+            project.link = link
         if date is not None:
             project.date = date
         if time is not None:

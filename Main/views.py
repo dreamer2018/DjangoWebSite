@@ -838,10 +838,12 @@ def get_all_projects(request):
         data = []
         for item in projects:
             dic = {
+                'gid': item.gid,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
                 'poster': item.poster,
+                'link': item.link,
                 'date': item.date.strftime('%Y-%m-%d'),
                 'time': item.time.strftime('%H:%M:%S'),
                 'reader': item.reader,
@@ -883,10 +885,12 @@ def get_projects_by_id(request):
         status, projects = Projects.get_project_by_id(id)
         if status:
             data = {
+                'gid': projects.gid,
                 'title': projects.title,
                 'content': projects.content,
                 'origin': projects.origin,
                 'poster': projects.poster,
+                'link': projects.link,
                 'date': projects.date.strftime('%Y-%m-%d'),
                 'time': projects.time.strftime('%H:%M:%S'),
                 'reader': projects.reader,
@@ -917,10 +921,12 @@ def get_projects_by_title(request):
         data = []
         for item in projects:
             dic = {
+                'gid': item.gid,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
                 'poster': item.poster,
+                'link': item.link,
                 'date': item.date.strftime('%Y-%m-%d'),
                 'time': item.time.strftime('%H:%M:%S'),
                 'reader': item.reader,
@@ -968,10 +974,12 @@ def get_projects_by_status(request):
             data = []
             for item in projects:
                 dic = {
+                    'gid': item.gid,
                     'title': item.title,
                     'content': item.content,
                     'origin': item.origin,
                     'poster': item.poster,
+                    'link': item.link,
                     'date': item.date.strftime('%Y-%m-%d'),
                     'time': item.time.strftime('%H:%M:%S'),
                     'reader': item.reader,
@@ -996,13 +1004,15 @@ def add_projects(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
+            gid = int(request.POST['gid'])
             title = request.POST['title']
             content = request.POST['content']
             origin = request.POST['origin']
+            link = request.POST['link']
             date = request.POST['date']
             time = request.POST['time']
-            address = request.POST['address']
-            labels = request.POST['labels']
+            reader = request.POST['reader']
+            upvote = request.POST['upvote']
             poster = None
             if 'poster' in request.POST.keys():
                 poster = request.POST['poster']
@@ -1015,11 +1025,11 @@ def add_projects(request):
             return HttpResponse(js)
         else:
             if poster is not None:
-                sta, id = projects.insert(title=title, content=content, origin=origin, date=date, time=time,
-                                        labels=labels, address=address, poster=poster)
+                sta, id = Projects.insert(gid=gid, title=title, content=content, origin=origin, link=link, date=date,
+                                          time=time, poster=poster)
             else:
-                sta, id = projects.insert(title=title, content=content, origin=origin, date=date, time=time,
-                                        address=address, labels=labels)
+                sta, id = Projects.insert(gid=gid, title=title, content=content, origin=origin, link=link, date=date,
+                                          time=time)
             rtu = {
                 'status': sta,
                 'message': 'success',
@@ -1049,9 +1059,11 @@ def alter_projects(request):
     if request.method == 'POST':
         try:
             eid = int(request.POST['eid'])
+            gid = int(request.POST['gid'])
             title = request.POST['title']
             content = request.POST['content']
             origin = request.POST['origin']
+            link = request.POST['link']
             date = request.POST['date']
             time = request.POST['time']
             labels = request.POST['labels']
@@ -1068,11 +1080,11 @@ def alter_projects(request):
             return HttpResponse(js)
         else:
             if poster is not None:
-                sta, message = projects.update(id=eid, title=title, content=content, origin=origin, date=date,
-                                             time=time, labels=labels, address=address, poster=poster)
+                sta, message = Projects.update(id=eid, gid=gid, title=title, content=content, origin=origin, link=link,
+                                               date=date, time=time, poster=poster)
             else:
-                sta, message = projects.update(id=eid, title=title, content=content, origin=origin, date=date,
-                                             time=time, address=address, labels=labels)
+                sta, message = Projects.update(id=eid, gid=gid, title=title, content=content, origin=origin, link=link,
+                                               date=date, time=time)
             rtu = {
                 'status': sta,
                 'message': message,
@@ -1108,7 +1120,7 @@ def alter_projects_status(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, projects = projects.get_projects_by_id(id=eid)
+            sta, projects = Projects.get_project_by_id(id=eid)
             if sta:
                 if projects.status == 0:
                     projects.status = 1
@@ -1159,7 +1171,7 @@ def delete_projects(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, projects = projects.delete_projects_by_id(id=eid)
+            sta, projects = Projects.delete_project_by_id(id=eid)
             if sta:
                 rtu = {
                     'status': sta,
@@ -1184,7 +1196,6 @@ def delete_projects(request):
         }
         js = json.dumps(rtu)
         return HttpResponse(js)  # 判断用户是否登录
-
 
 
 def is_login(request):
