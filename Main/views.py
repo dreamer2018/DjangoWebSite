@@ -65,6 +65,7 @@ def get_all_news(request):
         data = []
         for item in news:
             dic = {
+                'nid': item.id,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -111,6 +112,7 @@ def get_news_by_id(request):
         status, news = News.get_news_by_id(id)
         if status:
             data = {
+                'nid': news.id,
                 'title': news.title,
                 'content': news.content,
                 'origin': news.origin,
@@ -147,6 +149,7 @@ def get_news_by_title(request):
         data = []
         for item in news:
             dic = {
+                'nid': item.id,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -199,6 +202,7 @@ def get_news_by_status(request):
             data = []
             for item in news:
                 dic = {
+                    'nid': item.id,
                     'title': item.title,
                     'content': item.content,
                     'origin': item.origin,
@@ -445,6 +449,7 @@ def get_all_events(request):
         data = []
         for item in events:
             dic = {
+                'eid': item.id,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -493,6 +498,7 @@ def get_events_by_id(request):
         status, events = Events.get_events_by_id(id)
         if status:
             data = {
+                'eid': events.id,
                 'title': events.title,
                 'content': events.content,
                 'origin': events.origin,
@@ -530,6 +536,7 @@ def get_events_by_title(request):
         data = []
         for item in events:
             dic = {
+                'eid': item.id,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -584,6 +591,7 @@ def get_events_by_status(request):
             data = []
             for item in events:
                 dic = {
+                    'eid': item.id,
                     'title': item.title,
                     'content': item.content,
                     'origin': item.origin,
@@ -805,8 +813,6 @@ def delete_events(request):
         return HttpResponse(js)  # 判断用户是否登录
 
 
-#####################################################################
-
 # 获取项目信息
 def get_projects(request):
     """/projects/"""
@@ -838,6 +844,7 @@ def get_all_projects(request):
         data = []
         for item in projects:
             dic = {
+                'pid': item.pid,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -884,6 +891,7 @@ def get_projects_by_id(request):
         status, projects = Projects.get_project_by_id(id)
         if status:
             data = {
+                'pid': projects.id,
                 'title': projects.title,
                 'content': projects.content,
                 'origin': projects.origin,
@@ -919,6 +927,7 @@ def get_projects_by_title(request):
         data = []
         for item in projects:
             dic = {
+                'pid': item.pid,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -971,6 +980,7 @@ def get_projects_by_status(request):
             data = []
             for item in projects:
                 dic = {
+                    'pid': item.pid,
                     'title': item.title,
                     'content': item.content,
                     'origin': item.origin,
@@ -1101,7 +1111,7 @@ def alter_projects_status(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
-            eid = int(request.POST['eid'])
+            pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
                 'status': False,
@@ -1110,14 +1120,14 @@ def alter_projects_status(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, projects = Projects.get_project_by_id(id=eid)
+            sta, projects = Projects.get_project_by_id(id=pid)
             if sta:
                 if projects.status == 0:
                     projects.status = 1
-                    sta, message = projects.update(id=eid, status=1)
+                    sta, message = projects.update(id=pid, status=1)
                 else:
                     projects.status = 0
-                    sta, message = projects.update(id=eid, status=0)
+                    sta, message = projects.update(id=pid, status=0)
                 rtu = {
                     'status': sta,
                     'message': message,
@@ -1152,7 +1162,7 @@ def delete_projects(request):
 
     if request.method == 'POST':
         try:
-            eid = int(request.POST['eid'])
+            pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
                 'status': False,
@@ -1161,13 +1171,13 @@ def delete_projects(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, projects = Projects.delete_project_by_id(id=eid)
+            sta, projects = Projects.delete_project_by_id(id=pid)
             if sta:
                 rtu = {
                     'status': sta,
                     'message': projects,
                     'data': {
-                        'id': eid
+                        'id': pid
                     }
                 }
                 js = json.dumps(rtu)
@@ -1187,6 +1197,357 @@ def delete_projects(request):
         js = json.dumps(rtu)
         return HttpResponse(js)  # 判断用户是否登录
 
+
+######################################################################################## update 2017.12.01 17:05
+
+# 获取图片信息
+def get_pictures(request):
+    """/pictures/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_pictures(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_pictures_by_id(request)
+            if 'content' in request.GET.keys():
+                return get_pictures_by_content(request)
+            if 'status' in request.GET.keys():
+                return get_pictures_by_status(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有的图片信息
+def get_all_pictures(request):
+    """/pictures"""
+    status, pictures = Pictures.get_all_pictures()
+    if status:
+        data = []
+        for item in pictures:
+            dic = {
+                'pid': item.id,
+                'content': item.content,
+                'link': item.link,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'upvote': item.upvote,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'total_count': len(pictures),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取图片内容
+def get_pictures_by_id(request):
+    """/pictures/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, pictures = Pictures.get_picture_by_id(id)
+        if status:
+            data = {
+                'pid': pictures.id,
+                'content': pictures.content,
+                'link': pictures.link,
+                'date': pictures.date.strftime('%Y-%m-%d'),
+                'time': pictures.time.strftime('%H:%M:%S'),
+                'upvote': pictures.upvote,
+                'status': pictures.status
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过title获取图片内容
+def get_pictures_by_content(request):
+    """/pictures/{content}"""
+    content = request.GET['content']
+    status, pictures = Pictures.get_pictures_by_content(content=content)
+    if status:
+        data = []
+        for item in pictures:
+            dic = {
+                'pid': item.id,
+                'content': item.content,
+                'link': item.link,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'upvote': item.upvote,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'total_count': len(pictures),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过status获取图片内容
+def get_pictures_by_status(request):
+    """/pictures/{status}"""
+    try:
+        str_status = request.GET['status']
+        sta = int(str_status)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        # 当status 为 0 时，监测是否登陆
+        if sta == 0:
+            if not is_login(request)[0]:
+                return HttpResponseRedirect('/login/?next=' + request.path)
+        status, pictures = Pictures.get_pictures_by_status(status=sta)
+        if status:
+            data = []
+            for item in pictures:
+                dic = {
+                    'pid': item.id,
+                    'content': item.content,
+                    'link': item.link,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'upvote': item.upvote,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'total_count': len(pictures),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的图片
+@csrf_exempt
+def add_pictures(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            content = request.POST['content']
+            link = request.POST['link']
+            date = request.POST['date']
+            time = request.POST['time']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, id = Pictures.insert(content=content, link=link, date=date, time=time)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'id': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改图片内容
+@csrf_exempt
+def alter_pictures(request):
+    """/pictures/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            pid = int(request.POST['pid'])
+            content = request.POST['content']
+            link = request.POST['link']
+            date = request.POST['date']
+            time = request.POST['time']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, message = Pictures.update(id=pid, content=content, link=link, date=date, time=time)
+            rtu = {
+                'status': sta,
+                'message': message,
+                'data': {
+                    'id': pid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改图片状态
+@csrf_exempt
+def alter_pictures_status(request):
+    """/pictures/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            pid = int(request.POST['pid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, picture = Pictures.get_picture_by_id(id=pid)
+            if sta:
+                if picture.status == 0:
+                    picture.status = 1
+                    sta, message = Pictures.update(id=pid, status=1)
+                else:
+                    picture.status = 0
+                    sta, message = Pictures.update(id=pid, status=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': picture.status
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': picture
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除新闻
+@csrf_exempt
+def delete_pictures(request):
+    """/pictures/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+
+    if request.method == 'POST':
+        try:
+            pid = int(request.POST['pid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, pictures = Pictures.delete_picture_by_id(id=pid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': pictures,
+                    'data': {
+                        'id': pid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': pictures
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)  # 判断用户是否登录
+
+
+########################################################################################  2017.12.01 19:49 Test Pass
 
 def is_login(request):
     if 'login' in request.session.keys() and request.session['login']:

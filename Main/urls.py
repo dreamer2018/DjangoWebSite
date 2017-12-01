@@ -22,7 +22,13 @@ mian_url = [
     url(r'^events/delete/$', views.delete_events),  # /events/delete/
     url(r'^events/status/$', views.alter_events_status),  # /events/status/
     url(r'^projects/$', views.get_projects),
-    url(r'^projects/add/', views.add_projects),
-    url(r'^projects/alter/', views.alter_projects),
-    url(r'^projects/status/', views.alter_projects),
+    url(r'^projects/add/$', views.add_projects),
+    url(r'^projects/alter/$', views.alter_projects),
+    url(r'^projects/status/$', views.alter_projects_status),
+    url(r'^projects/delete/$', views.delete_projects),
+    url(r'^pictures/$', views.get_pictures),
+    url(r'^pictures/add/$', views.add_pictures),
+    url(r'^pictures/alter/$', views.alter_pictures),
+    url(r'^pictures/status/$', views.alter_pictures_status),
+    url(r'^pictures/delete/$', views.delete_pictures)
 ]

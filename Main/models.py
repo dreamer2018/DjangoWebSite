@@ -328,20 +328,19 @@ class Pictures(models.Model):
     link = models.CharField(max_length=255)  # 照片链接
     date = models.DateField()  # 日期
     time = models.TimeField()  # 时间
-    upvote = models.IntegerField()  # 点赞量
+    upvote = models.IntegerField(default=0)  # 点赞量
     status = models.IntegerField(default=0)  # 照片状态
 
     def __unicode__(self):
         return self.id
 
     @staticmethod
-    def insert(content, link, date, time, upvote, status=None):
+    def insert(content, link, date, time, status=None):
         picture = Pictures()
         picture.content = content
         picture.link = link
         picture.date = date
         picture.time = time
-        picture.upvote = upvote
         if status is not None:
             picture.status = status
         picture.save()
@@ -352,19 +351,24 @@ class Pictures(models.Model):
         try:
             picture = Pictures.objects.get(id=id)
         except Pictures.DoesNotExist:
-            return False, "Not Found！"
+            return False, "Not Found!"
         else:
             return True, picture
 
     @staticmethod
-    def get_pictures_by_title(title):
-        pictures = Pictures.objects.filter(title=title)
-        return pictures
+    def get_all_pictures():
+        pictures = Pictures.objects.all()
+        return True, pictures
+
+    @staticmethod
+    def get_pictures_by_content(content):
+        pictures = Pictures.objects.filter(content=content)
+        return True, pictures
 
     @staticmethod
     def get_pictures_by_status(status):
         pictures = Pictures.objects.filter(status=status)
-        return pictures
+        return True, pictures
 
     @staticmethod
     def update(id, content=None, link=None, date=None, time=None, upvote=None, status=None):
@@ -383,11 +387,12 @@ class Pictures(models.Model):
             picture.upvote = upvote
         if status is not None:
             picture.status = status
+        picture.save()
         return True, "update success!"
 
     @staticmethod
     def delete_picture_by_id(id):
-        sta, picture = Pictures.objects.get(id=id)
+        sta, picture = Pictures.get_picture_by_id(id=id)
         if not sta:
             return False, picture
         picture.delete()
@@ -479,7 +484,7 @@ class Projects(models.Model):
 
     @staticmethod
     def delete_project_by_id(id):
-        sta, project = Projects.objects.get(id=id)
+        sta, project = Projects.get_project_by_id(id=id)
         if not sta:
             return False, project
         project.delete()
