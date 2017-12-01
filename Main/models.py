@@ -395,12 +395,11 @@ class Pictures(models.Model):
 
 
 class Projects(models.Model):
-    gid = models.IntegerField()  # 项目组id
     title = models.CharField(max_length=50)  # 项目标题
     content = models.TextField()  # 项目内容描述
     origin = models.TextField()  # 项目源内容
     poster = models.CharField(max_length=255)  # 项目标志
-    link = models.CharField(max_length=255) # 项目链接
+    link = models.CharField(max_length=255)  # 项目链接
     date = models.DateField()  # 日期
     time = models.TimeField()  # 时间
     reader = models.IntegerField(default=0)  # 阅读量
@@ -421,8 +420,6 @@ class Projects(models.Model):
         project.link = link
         project.date = date
         project.time = time
-        project.reader = reader
-        project.upvote = upvote
         project.save()
         return True, project.id
 
@@ -448,16 +445,15 @@ class Projects(models.Model):
     @staticmethod
     def get_projects_by_status(status):
         project = Projects.objects.filter(status=status)
-        return project
+        return True, project
 
     @staticmethod
-    def update(id, gid=None, title=None, content=None, origin=None, poster=None, link=None, date=None, time=None, reader=None, upvote=None,
+    def update(id, title=None, content=None, origin=None, poster=None, link=None, date=None, time=None, reader=None,
+               upvote=None,
                status=None):
         sta, project = Projects.get_project_by_id(id)
         if not sta:
             return sta, project
-        if gid is not None:
-            project.gid = gid
         if title is not None:
             project.title = title
         if content is not None:
@@ -530,22 +526,22 @@ class Comments(models.Model):
     @staticmethod
     def get_comments_by_user(user):
         comments = Comments.objects.filter(user=user)
-        return comments
+        return True, comments
 
     @staticmethod
     def get_comments_by_type(type):
         comments = Comments.objects.filter(type=type)
-        return comments
+        return True, comments
 
     @staticmethod
     def get_comments_by_obj(obj):
         comments = Comments.objects.filter(obj=obj)
-        return comments
+        return True, comments
 
     @staticmethod
     def get_comments_by_status(status):
         comment = Comments.objects.filter(status=status)
-        return comment
+        return True, comment
 
     @staticmethod
     def update(id, user=None, o_type=None, obj=None, content=None, date=None, time=None, upvote=None, deal=None,
@@ -649,3 +645,24 @@ class Enrolled(models.Model):
             return False, enrolled
         enrolled.delete()
         return True, "delete success"
+
+
+class Devuser(models.Model):
+    uid = models.IntegerField()
+    pid = models.IntegerField()
+
+    def __unicode__(self):
+        return self.id
+
+    @staticmethod
+    def insert(uid, pid):
+        devuser = Devuser()
+        devuser.uid = uid
+        devuser.pid = pid
+        devuser.save()
+        return True, devuser.id
+
+    @staticmethod
+    def get_devuser_by_pid(pid):
+        devuser = Devuser.objects.filter(pid=pid)
+        return True, devuser
