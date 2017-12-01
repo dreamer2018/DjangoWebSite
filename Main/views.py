@@ -838,7 +838,6 @@ def get_all_projects(request):
         data = []
         for item in projects:
             dic = {
-                'gid': item.gid,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -885,7 +884,6 @@ def get_projects_by_id(request):
         status, projects = Projects.get_project_by_id(id)
         if status:
             data = {
-                'gid': projects.gid,
                 'title': projects.title,
                 'content': projects.content,
                 'origin': projects.origin,
@@ -921,7 +919,6 @@ def get_projects_by_title(request):
         data = []
         for item in projects:
             dic = {
-                'gid': item.gid,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -974,7 +971,6 @@ def get_projects_by_status(request):
             data = []
             for item in projects:
                 dic = {
-                    'gid': item.gid,
                     'title': item.title,
                     'content': item.content,
                     'origin': item.origin,
@@ -1004,15 +1000,12 @@ def add_projects(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
-            gid = int(request.POST['gid'])
             title = request.POST['title']
             content = request.POST['content']
             origin = request.POST['origin']
             link = request.POST['link']
             date = request.POST['date']
             time = request.POST['time']
-            reader = request.POST['reader']
-            upvote = request.POST['upvote']
             poster = None
             if 'poster' in request.POST.keys():
                 poster = request.POST['poster']
@@ -1025,10 +1018,10 @@ def add_projects(request):
             return HttpResponse(js)
         else:
             if poster is not None:
-                sta, id = Projects.insert(gid=gid, title=title, content=content, origin=origin, link=link, date=date,
+                sta, id = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
                                           time=time, poster=poster)
             else:
-                sta, id = Projects.insert(gid=gid, title=title, content=content, origin=origin, link=link, date=date,
+                sta, id = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
                                           time=time)
             rtu = {
                 'status': sta,
@@ -1058,16 +1051,13 @@ def alter_projects(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
-            eid = int(request.POST['eid'])
-            gid = int(request.POST['gid'])
+            pid = int(request.POST['pid'])
             title = request.POST['title']
             content = request.POST['content']
             origin = request.POST['origin']
             link = request.POST['link']
             date = request.POST['date']
             time = request.POST['time']
-            labels = request.POST['labels']
-            address = request.POST['address']
             poster = None
             if 'poster' in request.POST.keys():
                 poster = request.POST['poster']
@@ -1080,16 +1070,16 @@ def alter_projects(request):
             return HttpResponse(js)
         else:
             if poster is not None:
-                sta, message = Projects.update(id=eid, gid=gid, title=title, content=content, origin=origin, link=link,
+                sta, message = Projects.update(id=pid, title=title, content=content, origin=origin, link=link,
                                                date=date, time=time, poster=poster)
             else:
-                sta, message = Projects.update(id=eid, gid=gid, title=title, content=content, origin=origin, link=link,
+                sta, message = Projects.update(id=pid, title=title, content=content, origin=origin, link=link,
                                                date=date, time=time)
             rtu = {
                 'status': sta,
                 'message': message,
                 'data': {
-                    'id': eid
+                    'id': pid
                 }
             }
             js = json.dumps(rtu)

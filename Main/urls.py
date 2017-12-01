@@ -21,4 +21,8 @@ mian_url = [
     url(r'^events/alter/$', views.alter_events),  # /events/alter/
     url(r'^events/delete/$', views.delete_events),  # /events/delete/
     url(r'^events/status/$', views.alter_events_status),  # /events/status/
+    url(r'^projects/$', views.get_projects),
+    url(r'^projects/add/', views.add_projects),
+    url(r'^projects/alter/', views.alter_projects),
+    url(r'^projects/status/', views.alter_projects),
 ]

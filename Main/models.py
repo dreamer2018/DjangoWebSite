@@ -398,7 +398,7 @@ class Projects(models.Model):
     title = models.CharField(max_length=50)  # 项目标题
     content = models.TextField()  # 项目内容描述
     origin = models.TextField()  # 项目源内容
-    poster = models.CharField(max_length=255)  # 项目标志
+    poster = models.CharField(max_length=255, blank=True)  # 项目标志
     link = models.CharField(max_length=255)  # 项目链接
     date = models.DateField()  # 日期
     time = models.TimeField()  # 时间
@@ -410,16 +410,16 @@ class Projects(models.Model):
         return self.title
 
     @staticmethod
-    def insert(gid, title, content, origin, poster, link, date, time):
-        project = Pictures()
-        project.gid = gid
+    def insert(title, content, origin, link, date, time, poster=None):
+        project = Projects()
         project.title = title
         project.content = content
         project.origin = origin
-        project.poster = poster
         project.link = link
         project.date = date
         project.time = time
+        if poster is not None:
+            project.poster = poster
         project.save()
         return True, project.id
 
@@ -440,7 +440,7 @@ class Projects(models.Model):
     @staticmethod
     def get_projects_by_title(title):
         projects = Projects.objects.filter(title=title)
-        return projects
+        return True, projects
 
     @staticmethod
     def get_projects_by_status(status):
@@ -474,6 +474,7 @@ class Projects(models.Model):
             project.upvote = upvote
         if status is not None:
             project.status = status
+        project.save()
         return True, "update success!"
 
     @staticmethod
