@@ -186,19 +186,24 @@ class Feedback(models.Model):
         try:
             feedback = Feedback.objects.get(id=id)
         except Feedback.DoesNotExist:
-            return False, "Not Found！"
+            return False, "Not Found!"
         else:
             return True, feedback
 
     @staticmethod
-    def get_feedback_by_title(title):
-        feedback = Feedback.objects.filter(title=title)
-        return feedback
+    def get_all_feedback():
+        feedback = Feedback.objects.all()
+        return True, feedback
+
+    @staticmethod
+    def get_feedback_by_content(content):
+        feedback = Feedback.objects.filter(content=content)
+        return True, feedback
 
     @staticmethod
     def get_feedback_by_status(status):
         feedback = Feedback.objects.filter(status=status)
-        return feedback
+        return True, feedback
 
     @staticmethod
     def update(id, email=None, content=None, date=None, time=None, status=None):
@@ -220,7 +225,7 @@ class Feedback(models.Model):
 
     @staticmethod
     def delete_feedback_by_id(id):
-        status, feedback = Feedback.objects.get(id=id)
+        status, feedback = Feedback.get_feedback_by_id(id=id)
         if not status:
             return False, feedback
         feedback.delete()

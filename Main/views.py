@@ -81,7 +81,7 @@ def get_all_news(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(news),
+            'all_count': len(news),
             'data': data
         }
         js = json.dumps(rtu)
@@ -165,7 +165,7 @@ def get_news_by_title(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(news),
+            'all_count': len(news),
             'data': data
         }
         js = json.dumps(rtu)
@@ -218,7 +218,7 @@ def get_news_by_status(request):
             rtu = {
                 'status': True,
                 'message': 'success',
-                'total_count': len(news),
+                'all_count': len(news),
                 'data': data
             }
             js = json.dumps(rtu)
@@ -467,7 +467,7 @@ def get_all_events(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(events),
+            'all_count': len(events),
             'data': data
         }
         js = json.dumps(rtu)
@@ -554,7 +554,7 @@ def get_events_by_title(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(events),
+            'all_count': len(events),
             'data': data
         }
         js = json.dumps(rtu)
@@ -609,7 +609,7 @@ def get_events_by_status(request):
             rtu = {
                 'status': True,
                 'message': 'success',
-                'total_count': len(events),
+                'all_count': len(events),
                 'data': data
             }
             js = json.dumps(rtu)
@@ -860,7 +860,7 @@ def get_all_projects(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(projects),
+            'all_count': len(projects),
             'data': data
         }
         js = json.dumps(rtu)
@@ -943,7 +943,7 @@ def get_projects_by_title(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(projects),
+            'all_count': len(projects),
             'data': data
         }
         js = json.dumps(rtu)
@@ -996,7 +996,7 @@ def get_projects_by_status(request):
             rtu = {
                 'status': True,
                 'message': 'success',
-                'total_count': len(projects),
+                'all_count': len(projects),
                 'data': data
             }
             js = json.dumps(rtu)
@@ -1243,7 +1243,7 @@ def get_all_pictures(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(pictures),
+            'all_count': len(pictures),
             'data': data
         }
         js = json.dumps(rtu)
@@ -1318,7 +1318,7 @@ def get_pictures_by_content(request):
         rtu = {
             'status': True,
             'message': 'success',
-            'total_count': len(pictures),
+            'all_count': len(pictures),
             'data': data
         }
         js = json.dumps(rtu)
@@ -1367,7 +1367,7 @@ def get_pictures_by_status(request):
             rtu = {
                 'status': True,
                 'message': 'success',
-                'total_count': len(pictures),
+                'all_count': len(pictures),
                 'data': data
             }
             js = json.dumps(rtu)
@@ -1549,6 +1549,312 @@ def delete_pictures(request):
 
 ########################################################################################  2017.12.01 19:49 Test Pass
 
+# 获取反馈信息
+def get_feedback(request):
+    """/feedback/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_feedback(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_feedback_by_id(request)
+            if 'content' in request.GET.keys():
+                return get_feedback_by_content(request)
+            if 'status' in request.GET.keys():
+                return get_feedback_by_status(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有的反馈信息
+def get_all_feedback(request):
+    """/feedback"""
+    status, feedback = Feedback.get_all_feedback()
+    if status:
+        data = []
+        for item in feedback:
+            dic = {
+                'fid': item.id,
+                'content': item.content,
+                'email': item.email,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(feedback),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取反馈内容
+def get_feedback_by_id(request):
+    """/feedback/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, feedback = Feedback.get_feedback_by_id(id)
+        if status:
+            data = {
+                'pid': feedback.id,
+                'content': feedback.content,
+                'email': feedback.email,
+                'date': feedback.date.strftime('%Y-%m-%d'),
+                'time': feedback.time.strftime('%H:%M:%S'),
+                'status': feedback.status
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过title获取反馈内容
+def get_feedback_by_content(request):
+    """/feedback/{content}"""
+    content = request.GET['content']
+    status, feedback = Feedback.get_feedback_by_content(content=content)
+    if status:
+        data = []
+        for item in feedback:
+            dic = {
+                'pid': item.id,
+                'content': item.content,
+                'email': item.email,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(feedback),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过status获取反馈内容
+def get_feedback_by_status(request):
+    """/feedback/{status}"""
+    try:
+        str_status = request.GET['status']
+        sta = int(str_status)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        # 当status 为 0 时，监测是否登陆
+        if sta == 0:
+            if not is_login(request)[0]:
+                return HttpResponseRedirect('/login/?next=' + request.path)
+        status, feedback = Feedback.get_feedback_by_status(status=sta)
+        if status:
+            data = []
+            for item in feedback:
+                dic = {
+                    'pid': item.id,
+                    'content': item.content,
+                    'email': item.email,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(feedback),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的反馈
+@csrf_exempt
+def add_feedback(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            content = request.POST['content']
+            email = request.POST['email']
+            date = request.POST['date']
+            time = request.POST['time']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, id = Feedback.insert(content=content, email=email, date=date, time=time)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'fid': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改反馈状态
+@csrf_exempt
+def alter_feedback_status(request):
+    """/feedback/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            fid = int(request.POST['fid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, feedback = Feedback.get_feedback_by_id(id=fid)
+            if sta:
+                if feedback.status == 0:
+                    feedback.status = 1
+                    sta, message = Feedback.update(id=fid, status=1)
+                else:
+                    feedback.status = 0
+                    sta, message = Feedback.update(id=fid, status=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': feedback.status
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': feedback
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除反馈
+@csrf_exempt
+def delete_feedback(request):
+    """/feedback/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+
+    if request.method == 'POST':
+        try:
+            fid = int(request.POST['fid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, feedback = Feedback.delete_feedback_by_id(id=fid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': feedback,
+                    'data': {
+                        'fid': fid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': feedback
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+########################################################################################  2017.12.04 18:11 Test Pass
+
+
+# 判断用户是否登录
 def is_login(request):
     if 'login' in request.session.keys() and request.session['login']:
         return True, request.session['user']

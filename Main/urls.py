@@ -30,5 +30,9 @@ mian_url = [
     url(r'^pictures/add/$', views.add_pictures),
     url(r'^pictures/alter/$', views.alter_pictures),
     url(r'^pictures/status/$', views.alter_pictures_status),
-    url(r'^pictures/delete/$', views.delete_pictures)
+    url(r'^pictures/delete/$', views.delete_pictures),
+    url(r'^feedback/$', views.get_feedback),
+    url(r'^feedback/add/$', views.add_feedback),
+    url(r'^feedback/status/$', views.alter_feedback_status),
+    url(r'^feedback/delete/$', views.delete_feedback)
 ]
