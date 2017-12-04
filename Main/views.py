@@ -1851,8 +1851,533 @@ def delete_feedback(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
+
 ########################################################################################  2017.12.04 18:11 Test Pass
 
+# 获取评论信息
+def get_comments(request):
+    """/comments/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_comments(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_comments_by_id(request)
+            if 'user' in request.GET.keys():
+                return get_comments_by_user(request)
+            if 'type' in request.GET.keys():
+                return get_comments_by_type(request)
+            if 'obj' in request.GET.keys():
+                return get_comments_by_obj(request)
+            if 'status' in request.GET.keys():
+                return get_comments_by_status(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有的评论信息
+def get_all_comments(request):
+    """/comments"""
+    status, comments = Comments.get_all_comments()
+    if status:
+        data = []
+        for item in comments:
+            dic = {
+                'cid': item.id,
+                'user': item.user,
+                'o_type': item.o_type,
+                'obj': item.obj,
+                'content': item.content,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'upvote': item.upvote,
+                'deal': item.deal,
+                'status': item.status
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(comments),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取评论内容
+def get_comments_by_id(request):
+    """/comments/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, comments = Comments.get_comment_by_id(id)
+        if status:
+            data = {
+                'cid': comments.id,
+                'user': comments.user,
+                'o_type': comments.o_type,
+                'obj': comments.obj,
+                'content': comments.content,
+                'date': comments.date.strftime('%Y-%m-%d'),
+                'time': comments.time.strftime('%H:%M:%S'),
+                'upvote': comments.upvote,
+                'deal': comments.deal,
+                'status': comments.status
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过用户ID获取评论内容
+def get_comments_by_user(request):
+    """/comments/{user}"""
+    try:
+        str_user = request.GET['user']
+        user = int(str_user)
+        status, comments = Comments.get_comments_by_user(user=user)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if status:
+            data = []
+            for item in comments:
+                dic = {
+                    'cid': item.id,
+                    'user': item.user,
+                    'o_type': item.o_type,
+                    'obj': item.obj,
+                    'content': item.content,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'upvote': item.upvote,
+                    'deal': item.deal,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(comments),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': False,
+                'message': 'not found!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 通过o_type获取评论内容
+def get_comments_by_type(request):
+    """/comments/{type}"""
+    try:
+        str_type = request.GET['type']
+        type = int(str_type)
+        status, comments = Comments.get_comments_by_type(type=type)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if status:
+            data = []
+            for item in comments:
+                dic = {
+                    'cid': item.id,
+                    'user': item.user,
+                    'o_type': item.o_type,
+                    'obj': item.obj,
+                    'content': item.content,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'upvote': item.upvote,
+                    'deal': item.deal,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(comments),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': False,
+                'message': 'not found!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 通过评论对象获取评论内容
+def get_comments_by_obj(request):
+    """/comments/{type}"""
+    try:
+        str_obj = request.GET['obj']
+        obj = int(str_obj)
+        status, comments = Comments.get_comments_by_obj(obj=obj)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if status:
+            data = []
+            for item in comments:
+                dic = {
+                    'cid': item.id,
+                    'user': item.user,
+                    'o_type': item.o_type,
+                    'obj': item.obj,
+                    'content': item.content,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'upvote': item.upvote,
+                    'deal': item.deal,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(comments),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': False,
+                'message': 'not found!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 通过status获取反馈内容
+def get_comments_by_status(request):
+    """/comments/{status}"""
+    try:
+        str_status = request.GET['status']
+        sta = int(str_status)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        # 当status 为 0 时，监测是否登陆
+        if sta == 0:
+            if not is_login(request)[0]:
+                return HttpResponseRedirect('/login/?next=' + request.path)
+        status, comments = Comments.get_comments_by_status(status=sta)
+        if status:
+            data = []
+            for item in comments:
+                dic = {
+                    'cid': item.id,
+                    'user': item.user,
+                    'o_type': item.o_type,
+                    'obj': item.obj,
+                    'content': item.content,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    'upvote': item.upvote,
+                    'deal': item.deal,
+                    'status': item.status
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(comments),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的反馈
+@csrf_exempt
+def add_comments(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            user = request.POST['user']
+            type = request.POST['type']
+            obj = request.POST['obj']
+            content = request.POST['content']
+            date = request.POST['date']
+            time = request.POST['time']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, id = Comments.insert(user=user, o_type=type, obj=obj, content=content, date=date, time=time)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'cid': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除评论
+@csrf_exempt
+def delete_comments(request):
+    """/comments/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+
+    if request.method == 'POST':
+        try:
+            cid = int(request.POST['cid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, comments = Comments.delete_comment_by_id(id=cid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': comments,
+                    'data': {
+                        'fid': cid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': comments
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更该评论内容
+@csrf_exempt
+def alter_comments(request):
+    """/comments/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            cid = int(request.POST['cid'])
+            user = request.POST['user']
+            type = request.POST['type']
+            obj = request.POST['obj']
+            content = request.POST['content']
+            date = request.POST['date']
+            time = request.POST['time']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, message = Comments.update(id=cid, user=user, o_type=type, obj=obj, content=content, date=date,
+                                           time=time)
+            rtu = {
+                'status': sta,
+                'message': message,
+                'data': {
+                    'id': cid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改deal状态
+@csrf_exempt
+def alter_comments_deal(request):
+    """/comments/deal/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            cid = int(request.POST['cid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, comments = Comments.get_comment_by_id(id=cid)
+            if sta:
+                if comments.deal == 0:
+                    comments.deal = 1
+                    sta, message = Comments.update(id=cid, deal=1)
+                else:
+                    comments.deal = 0
+                    sta, message = comments.update(id=cid, deal=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'deal': comments.deal
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': comments
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改评论状态
+@csrf_exempt
+def alter_comments_status(request):
+    """/comments/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            cid = int(request.POST['cid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, comments = Comments.get_comment_by_id(id=cid)
+            if sta:
+                if comments.status == 0:
+                    comments.status = 1
+                    sta, message = Comments.update(id=cid, status=1)
+                else:
+                    comments.status = 0
+                    sta, message = comments.update(id=cid, status=0)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': comments.status
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': comments
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+########################################################################################  2017.12.04 19:54 Test Pass
 
 # 判断用户是否登录
 def is_login(request):

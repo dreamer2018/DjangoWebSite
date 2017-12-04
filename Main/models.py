@@ -519,9 +519,6 @@ class Comments(models.Model):
         comment.content = content
         comment.date = date
         comment.time = time
-        comment.upvote = upvote
-        comment.deal = deal
-        comment.status = status
         comment.save()
         return True, comment.id
 
@@ -535,13 +532,18 @@ class Comments(models.Model):
             return True, comment
 
     @staticmethod
+    def get_all_comments():
+        comments = Comments.objects.all()
+        return True, comments
+
+    @staticmethod
     def get_comments_by_user(user):
         comments = Comments.objects.filter(user=user)
         return True, comments
 
     @staticmethod
     def get_comments_by_type(type):
-        comments = Comments.objects.filter(type=type)
+        comments = Comments.objects.filter(o_type=type)
         return True, comments
 
     @staticmethod
@@ -583,7 +585,7 @@ class Comments(models.Model):
 
     @staticmethod
     def delete_comment_by_id(id):
-        sta, comment = Comments.objects.get(id=id)
+        sta, comment = Comments.get_comment_by_id(id=id)
         if not sta:
             return False, comment
         comment.delete()

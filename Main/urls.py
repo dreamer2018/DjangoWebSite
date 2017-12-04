@@ -34,5 +34,11 @@ mian_url = [
     url(r'^feedback/$', views.get_feedback),
     url(r'^feedback/add/$', views.add_feedback),
     url(r'^feedback/status/$', views.alter_feedback_status),
-    url(r'^feedback/delete/$', views.delete_feedback)
+    url(r'^feedback/delete/$', views.delete_feedback),
+    url(r'^comments/$', views.get_comments),
+    url(r'^comments/add/$', views.add_comments),
+    url(r'^comments/delete/$', views.delete_comments),
+    url(r'^comments/alter/$', views.alter_comments),
+    url(r'^comments/deal/$', views.alter_comments_deal),
+    url(r'^comments/status/$', views.alter_comments_status),
 ]
