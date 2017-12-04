@@ -41,4 +41,8 @@ mian_url = [
     url(r'^comments/alter/$', views.alter_comments),
     url(r'^comments/deal/$', views.alter_comments_deal),
     url(r'^comments/status/$', views.alter_comments_status),
+    url(r'^anonymous/$', views.get_anonymous),
+    url(r'^anonymous/add/$', views.add_anonymous),
+    url(r'^anonymous/alter/$', views.alter_anonymous),
+    url(r'^anonymous/delete/$', views.delete_anonymous),
 ]

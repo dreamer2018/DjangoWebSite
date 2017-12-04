@@ -33,6 +33,16 @@ class Anonymous(models.Model):
             return True, anonymous
 
     @staticmethod
+    def get_all_anonymous():
+        anonymous = Anonymous.objects.all()
+        return True, anonymous
+
+    @staticmethod
+    def get_anonymous_by_email(email):
+        anonymous = Anonymous.objects.filter(email=email)
+        return True, anonymous
+
+    @staticmethod
     def update(id, nickname=None, email=None):
         status, anonymous = Anonymous.get_anonymous_by_id(id)
         if not status:

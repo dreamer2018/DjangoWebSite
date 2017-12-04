@@ -2377,7 +2377,257 @@ def alter_comments_status(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
+
 ########################################################################################  2017.12.04 19:54 Test Pass
+
+
+# 获取反馈信息
+def get_anonymous(request):
+    """/anonymous/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_anonymous(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_anonymous_by_id(request)
+            if 'email' in request.GET.keys():
+                return get_anonymous_by_email(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有的匿名用户信息
+def get_all_anonymous(request):
+    """/anonymous"""
+    status, anonymous = Anonymous.get_all_anonymous()
+    if status:
+        data = []
+        for item in anonymous:
+            dic = {
+                'aid': item.id,
+                'email': item.email,
+                'nickname': item.nickname
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(anonymous),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取匿名用户信息
+def get_anonymous_by_id(request):
+    """/anonymous/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, anonymous = Anonymous.get_anonymous_by_id(id)
+        if status:
+            data = {
+                'aid': anonymous.id,
+                'email': anonymous.email,
+                'nickname': anonymous.nickname
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过email获取匿名用户
+def get_anonymous_by_email(request):
+    """/anonymous/{content}"""
+    email = request.GET['email']
+    status, anonymous = Anonymous.get_anonymous_by_email(email=email)
+    if status:
+        data = []
+        for item in anonymous:
+            dic = {
+                'aid': item.id,
+                'email': item.email,
+                'nickname': item.nickname
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(anonymous),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 增加新的匿名用户信息
+@csrf_exempt
+def add_anonymous(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            email = request.POST['email']
+            nickname = request.POST['nickname']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, id = Anonymous.insert(nickname=nickname, email=email)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'nid': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改反馈状态
+@csrf_exempt
+def alter_anonymous(request):
+    """/anonymous/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            nid = int(request.POST['nid'])
+            email = request.POST['email']
+            nickname = request.POST['nickname']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, anonymous = Anonymous.get_anonymous_by_id(id=nid)
+            if sta:
+                sta, message = Anonymous.update(id=nid, email=email, nickname=nickname)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': anonymous.id
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': anonymous
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除反馈
+@csrf_exempt
+def delete_anonymous(request):
+    """/anonymous/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+
+    if request.method == 'POST':
+        try:
+            nid = int(request.POST['nid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, anonymous = Anonymous.delete_anonymous_by_id(id=nid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': anonymous,
+                    'data': {
+                        'fid': nid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': anonymous
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+########################################################################################  2017.12.04 20:23 Test Pass
+
 
 # 判断用户是否登录
 def is_login(request):
