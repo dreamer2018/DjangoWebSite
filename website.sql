@@ -259,7 +259,7 @@ all_count:1
 /*==============================================================*/
 CREATE TABLE comments
 (
-  rid     INT PRIMARY KEY AUTO_INCREMENT, # ID
+  cid     INT PRIMARY KEY AUTO_INCREMENT, # ID
   user    INT    NOT NULL, # 评论者
   o_type  INT(2) NOT NULL, # 评论的对象类型
   obj     INT    NOT NULL, # 评论的对象
