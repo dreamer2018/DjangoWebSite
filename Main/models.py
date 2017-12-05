@@ -629,19 +629,24 @@ class Enrolled(models.Model):
         try:
             enrolled = Enrolled.objects.get(id=id)
         except Enrolled.DoesNotExist:
-            return False, "Not Found！"
+            return False, "Not Found!"
         else:
             return True, enrolled
 
     @staticmethod
+    def get_all_enrolled():
+        enrolled = Enrolled.objects.all()
+        return True, enrolled
+
+    @staticmethod
     def get_enrolled_by_obj(obj):
         enrolleds = Enrolled.objects.filter(obj=obj)
-        return enrolleds
+        return True, enrolleds
 
     @staticmethod
     def get_enrolled_by_status(status):
         enrolled = Enrolled.objects.filter(status=status)
-        return enrolled
+        return True, enrolled
 
     @staticmethod
     def update(id, obj, uid, date, time, status=None):
@@ -663,7 +668,7 @@ class Enrolled(models.Model):
 
     @staticmethod
     def delete_enrolled_by_id(id):
-        sta, enrolled = Enrolled.objects.get(id=id)
+        sta, enrolled = Enrolled.get_enrolled_by_id(id=id)
         if not sta:
             return False, enrolled
         enrolled.delete()
@@ -686,6 +691,28 @@ class Devuser(models.Model):
         return True, devuser.id
 
     @staticmethod
+    def get_devuser_by_id(id):
+        try:
+            devuser = Devuser.objects.get(id=id)
+        except Devuser.DoesNotExist:
+            return False, "Not Found!"
+        else:
+            return True, devuser
+
+    @staticmethod
     def get_devuser_by_pid(pid):
         devuser = Devuser.objects.filter(pid=pid)
         return True, devuser
+
+    @staticmethod
+    def get_all_devuser():
+        devuser = Devuser.objects.all()
+        return True, devuser
+
+    @staticmethod
+    def delete_devuser_by_id(id):
+        sta, devuser = Devuser.get_devuser_by_id(id=id)
+        if not sta:
+            return False, devuser
+        devuser.delete()
+        return True, "delete success"

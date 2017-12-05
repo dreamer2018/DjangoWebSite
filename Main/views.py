@@ -5,7 +5,7 @@
 """
 
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
-from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments
+from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments, Enrolled, Devuser
 import json
 from django.views.decorators.csrf import csrf_exempt
 
@@ -14,23 +14,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 def test(request):
     anonymous = Anonymous()
-    # anonymous.insert("zhoupan", "zhoupans_mail@163.com")
-    # status, an = anonymous.get_anonymous_by_id(2)
-
-    # Events.insert(title="第十四届软件自由日", content="第十四届软件自由日（西邮站）圆满落下帷幕", origin="第十四届软件自由日（西邮站）圆满落下帷幕",
-    #              date="2017-11-10", time="16:20:00",
-    #              address="西安邮电大学", labels="SFD,自由软件", poster="https://www.baidu.com/img/bd_logo1.png")
-    # status, event = Events.get_events_by_id(1)
-
-    # Feedback.insert(email="zp@qq.com", content="你好！", date="2017-11-10", time="20:00:00")
-    # status, fb = Feedback.get_feedback_by_id(1)
-    # return HttpResponse(fb.email)
-
-    # News.insert(title="第十四届软件自由日", content="第十四届软件自由日（西邮站）圆满落下帷幕", origin="第十四届软件自由日（西邮站）圆满落下帷幕",
-    #             date="2017-11-10", time="16:20:00", labels="SFD,自由软件",
-    #             poster="https://www.baidu.com/img/bd_logo1.png")
-    # status, new = News.get_news_by_id(1)
-
     return HttpResponse(len(request.GET))
 
 
@@ -194,9 +177,9 @@ def get_news_by_status(request):
         return HttpResponse(js)
     else:
         # 当status 为 0 时，监测是否登陆
-        if sta == 0:
-            if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/?next=' + request.path)
+        # if sta == 0:
+        #     if not is_login(request)[0]:
+        #         return HttpResponseRedirect('/login/?next=' + request.path)
         status, news = News.get_news_by_status(status=sta)
         if status:
             data = []
@@ -583,9 +566,9 @@ def get_events_by_status(request):
         return HttpResponse(js)
     else:
         # 当status 为 0 时，监测是否登陆
-        if sta == 0:
-            if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/?next=' + request.path)
+        # if sta == 0:
+        #     if not is_login(request)[0]:
+        #         return HttpResponseRedirect('/login/?next=' + request.path)
         status, events = Events.get_events_by_status(status=sta)
         if status:
             data = []
@@ -665,9 +648,8 @@ def add_events(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
-        # 更改新闻内容
 
-
+# 更改活动内容
 @csrf_exempt
 def alter_events(request):
     """/events/alter/"""
@@ -718,7 +700,7 @@ def alter_events(request):
         return HttpResponse(js)
 
 
-# 更改新闻状态
+# 更改活动状态
 @csrf_exempt
 def alter_events_status(request):
     """/events/status/"""
@@ -768,7 +750,7 @@ def alter_events_status(request):
         return HttpResponse(js)
 
 
-# 删除新闻
+# 删除活动
 @csrf_exempt
 def delete_events(request):
     """/events/delete/"""
@@ -972,9 +954,9 @@ def get_projects_by_status(request):
         return HttpResponse(js)
     else:
         # 当status 为 0 时，监测是否登陆
-        if sta == 0:
-            if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/?next=' + request.path)
+        # if sta == 0:
+        #     if not is_login(request)[0]:
+        #         return HttpResponseRedirect('/login/?next=' + request.path)
         status, projects = Projects.get_projects_by_status(status=sta)
         if status:
             data = []
@@ -1051,9 +1033,8 @@ def add_projects(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
-        # 更改新闻内容
 
-
+# 更改项目内容
 @csrf_exempt
 def alter_projects(request):
     """/projects/alter/"""
@@ -1103,7 +1084,7 @@ def alter_projects(request):
         return HttpResponse(js)
 
 
-# 更改新闻状态
+# 更改项目状态
 @csrf_exempt
 def alter_projects_status(request):
     """/projects/status/"""
@@ -1297,7 +1278,7 @@ def get_pictures_by_id(request):
         return HttpResponse(js)
 
 
-# 通过title获取图片内容
+# 通过content获取图片内容
 def get_pictures_by_content(request):
     """/pictures/{content}"""
     content = request.GET['content']
@@ -1347,9 +1328,9 @@ def get_pictures_by_status(request):
         return HttpResponse(js)
     else:
         # 当status 为 0 时，监测是否登陆
-        if sta == 0:
-            if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/?next=' + request.path)
+        # if sta == 0:
+        #     if not is_login(request)[0]:
+        #         return HttpResponseRedirect('/login/?next=' + request.path)
         status, pictures = Pictures.get_pictures_by_status(status=sta)
         if status:
             data = []
@@ -1502,7 +1483,7 @@ def alter_pictures_status(request):
         return HttpResponse(js)
 
 
-# 删除新闻
+# 删除图片
 @csrf_exempt
 def delete_pictures(request):
     """/pictures/delete/"""
@@ -1644,7 +1625,7 @@ def get_feedback_by_id(request):
         return HttpResponse(js)
 
 
-# 通过title获取反馈内容
+# 通过content获取反馈内容
 def get_feedback_by_content(request):
     """/feedback/{content}"""
     content = request.GET['content']
@@ -1693,9 +1674,9 @@ def get_feedback_by_status(request):
         return HttpResponse(js)
     else:
         # 当status 为 0 时，监测是否登陆
-        if sta == 0:
-            if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/?next=' + request.path)
+        # if sta == 0:
+        #     if not is_login(request)[0]:
+        #         return HttpResponseRedirect('/login/?next=' + request.path)
         status, feedback = Feedback.get_feedback_by_status(status=sta)
         if status:
             data = []
@@ -2381,7 +2362,7 @@ def alter_comments_status(request):
 ########################################################################################  2017.12.04 19:54 Test Pass
 
 
-# 获取反馈信息
+# 获取匿名用户信息
 def get_anonymous(request):
     """/anonymous/"""
     if request.method == 'GET':
@@ -2535,7 +2516,7 @@ def add_anonymous(request):
         return HttpResponse(js)
 
 
-# 更改反馈状态
+# 更改匿名用户信息
 @csrf_exempt
 def alter_anonymous(request):
     """/anonymous/alter/"""
@@ -2582,13 +2563,12 @@ def alter_anonymous(request):
         return HttpResponse(js)
 
 
-# 删除反馈
+# 删除匿名用户信息
 @csrf_exempt
 def delete_anonymous(request):
     """/anonymous/delete/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-
     if request.method == 'POST':
         try:
             nid = int(request.POST['nid'])
@@ -2626,7 +2606,538 @@ def delete_anonymous(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
+
 ########################################################################################  2017.12.04 20:23 Test Pass
+
+
+# 获取报名记录
+def get_enrolled(request):
+    """/enrolled/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_enrolled(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_enrolled_by_id(request)
+            if 'obj' in request.GET.keys():
+                return get_enrolled_by_obj(request)
+            if 'status' in request.GET.keys():
+                return get_enrolled_by_status(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有报名信息
+def get_all_enrolled(request):
+    """/enrolled"""
+    status, enrolled = Enrolled.get_all_enrolled()
+    if status:
+        data = []
+        for item in enrolled:
+            dic = {
+                'eid': item.id,
+                'uid': item.uid,
+                'obj': item.obj,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                "status": item.status,
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(enrolled),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取报名信息
+def get_enrolled_by_id(request):
+    """/enrolled/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, enrolled = Enrolled.get_enrolled_by_id(id)
+        if status:
+            data = {
+                'eid': enrolled.id,
+                'uid': enrolled.uid,
+                'obj': enrolled.obj,
+                'date': enrolled.date.strftime('%Y-%m-%d'),
+                'time': enrolled.time.strftime('%H:%M:%S'),
+                "status": enrolled.status,
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过obj获取报名信息
+def get_enrolled_by_obj(request):
+    """/enrolled/{obj}"""
+    try:
+        str_obj = request.GET['obj']
+        obj = int(str_obj)
+        status, enrolled = Enrolled.get_enrolled_by_obj(obj=obj)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid arguments!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if status:
+            data = []
+            for item in enrolled:
+                dic = {
+                    'eid': item.id,
+                    'uid': item.uid,
+                    'obj': item.obj,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    "status": item.status,
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(enrolled),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': False,
+                'message': 'not found!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 通过status获取报名信息
+def get_enrolled_by_status(request):
+    """/enrolled/{status}"""
+    try:
+        str_status = request.GET['status']
+        sta = int(str_status)
+        status, enrolled = Enrolled.get_enrolled_by_status(status=sta)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if status:
+            data = []
+            for item in enrolled:
+                dic = {
+                    'eid': item.id,
+                    'uid': item.uid,
+                    'obj': item.obj,
+                    'date': item.date.strftime('%Y-%m-%d'),
+                    'time': item.time.strftime('%H:%M:%S'),
+                    "status": item.status,
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(enrolled),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': False,
+                'message': 'not found!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的报名用户信息
+@csrf_exempt
+def add_enrolled(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            obj = int(request.POST['obj'])
+            uid = int(request.POST['uid'])
+            date = request.POST['date']
+            time = request.POST['time']
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, id = Enrolled.insert(obj=obj, uid=uid, date=date, time=time)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'eid': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改反馈状态
+@csrf_exempt
+def alter_enrolled(request):
+    """/enrolled/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+            obj = int(request.POST['obj'])
+            uid = int(request.POST['uid'])
+            date = request.POST['date']
+            time = request.POST['time']
+            status = None
+            if 'status' in request.POST.keys():
+                status = int(request.POST['status'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, enrolled = Enrolled.get_enrolled_by_id(id=eid)
+            if sta:
+                if status is not None:
+                    sta, message = Enrolled.update(id=eid, obj=obj, uid=uid, date=date, time=time, status=status)
+                else:
+                    sta, message = Enrolled.update(id=eid, obj=obj, uid=uid, date=date, time=time)
+                rtu = {
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': enrolled.id
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': enrolled
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除报名信息
+@csrf_exempt
+def delete_enrolled(request):
+    """/enrolled/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, enrolled = Enrolled.delete_enrolled_by_id(id=eid)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': enrolled,
+                    'data': {
+                        'eid': eid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': enrolled
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+########################################################################################  2017.12.04 21:08 Test Pass
+
+# 获取开发者信息
+def get_devuser(request):
+    """/devuser/"""
+    if request.method == 'GET':
+        if len(request.GET) == 0:
+            return get_all_devuser(request)
+        elif len(request.GET) > 1 or len(request.GET) < 0:
+            pass
+        else:
+            if 'id' in request.GET.keys():
+                return get_devuser_by_id(request)
+            if 'pid' in request.GET.keys():
+                return get_devuser_by_pid(request)
+    rtu = {
+        'status': False,
+        'message': 'invalid argument',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有开发者信息
+def get_all_devuser(request):
+    """/devuser"""
+    status, devuser = Devuser.get_all_devuser()
+    if status:
+        data = []
+        for item in devuser:
+            dic = {
+                'did': item.id,
+                'uid': item.uid,
+                'pid': item.pid
+            }
+            data.append(dic)
+        rtu = {
+            'status': True,
+            'message': 'success',
+            'all_count': len(devuser),
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取开发者信息
+def get_devuser_by_id(request):
+    """/devuser/{id}"""
+    try:
+        str_id = request.GET['id']
+        id = int(str_id)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, devuser = Devuser.get_devuser_by_id(id=id)
+        if status:
+            data = {
+                'did': devuser.id,
+                'uid': devuser.uid,
+                'pid': devuser.pid
+            }
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过obj获取开发者信息
+def get_devuser_by_pid(request):
+    """/devuser/{obj}"""
+    try:
+        str_pid = request.GET['pid']
+        pid = int(str_pid)
+        status, devuser = Devuser.get_devuser_by_pid(pid=pid)
+    except Exception, e:
+        rtu = {
+            'status': False,
+            'message': 'invalid arguments!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if status:
+            data = []
+            for item in devuser:
+                dic = {
+                    'did': item.id,
+                    'uid': item.uid,
+                    'pid': item.pid
+                }
+                data.append(dic)
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'all_count': len(devuser),
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': False,
+                'message': 'not found!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+
+# 增加新的开发者信息
+@csrf_exempt
+def add_devuser(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            uid = int(request.POST['uid'])
+            pid = int(request.POST['pid'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, id = Devuser.insert(uid=uid, pid=pid)
+            rtu = {
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'eid': id
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除开发者
+@csrf_exempt
+def delete_devuser(request):
+    """/devuser/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            did = int(request.POST['did'])
+        except Exception, e:
+            rtu = {
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, devuser = Devuser.delete_devuser_by_id(id=did)
+            if sta:
+                rtu = {
+                    'status': sta,
+                    'message': devuser,
+                    'data': {
+                        'eid': did
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'status': sta,
+                    'message': devuser
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
 
 
 # 判断用户是否登录

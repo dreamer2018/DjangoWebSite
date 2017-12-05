@@ -45,4 +45,11 @@ mian_url = [
     url(r'^anonymous/add/$', views.add_anonymous),
     url(r'^anonymous/alter/$', views.alter_anonymous),
     url(r'^anonymous/delete/$', views.delete_anonymous),
+    url(r'^enrolled/$', views.get_enrolled),
+    url(r'^enrolled/add/$', views.add_enrolled),
+    url(r'^enrolled/alter/$', views.alter_enrolled),
+    url(r'^enrolled/delete/$', views.delete_enrolled),
+    url(r'^devuser/$', views.get_devuser),
+    url(r'^devuser/add/$', views.add_devuser),
+    url(r'^devuser/delete/$', views.delete_devuser),
 ]
