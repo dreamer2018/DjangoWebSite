@@ -10,7 +10,6 @@ import OAuth_Django_SDK
 mian_url = [
     url(r'^test/$', views.test),  # /test/
     url(r'^login/$', OAuth_Django_SDK.oauth_login),  # /login/
-    url(r'^user/$', OAuth_Django_SDK.get_user_info),  # /user/
     url(r'^news/$', views.get_news),  # /news/
     url(r'^news/add/$', views.add_news),  # /news/add/
     url(r'^news/alter/$', views.alter_news),  # /news/alter/
@@ -52,4 +51,7 @@ mian_url = [
     url(r'^devuser/$', views.get_devuser),
     url(r'^devuser/add/$', views.add_devuser),
     url(r'^devuser/delete/$', views.delete_devuser),
+    url(r'^user/me/$', views.get_current_user_info),
+    url(r'^user/$', views.get_all_user_info),
+    url(r'^user/id/$', views.get_user_by_id)
 ]

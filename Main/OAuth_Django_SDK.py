@@ -82,7 +82,7 @@ def oauth_callback(request, next=None):
     # 获取access_token
     access_token = dic['access_token']
     request.session['access_token'] = access_token
-    get_user_info(request)
+    request.session['login'] = True
     if next is not None:
         return HttpResponseRedirect(next)
     rtu = {

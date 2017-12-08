@@ -8,6 +8,8 @@ from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments, Enrolled, Devuser
 import json
 from django.views.decorators.csrf import csrf_exempt
+from OAuth_Django_SDK import combine_url, GET_USER_INFO_URL
+import urllib
 
 
 # Create your views here.
@@ -3140,9 +3142,136 @@ def delete_devuser(request):
         return HttpResponse(js)
 
 
+# 获取用户信息
+def get_current_user_info(request):
+    if 'login' in request.session.keys() and request.session['login']:
+        access_token = request.session['access_token']
+        data = {
+            'access_token': access_token
+        }
+        url = combine_url(GET_USER_INFO_URL, data)
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError, e:
+            rtu = {
+                'status': False,
+                'message': 'login out of time!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': json.loads(response.read())
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'user not login!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 获取所有用户信息
+def get_all_user_info(request):
+    if 'login' in request.session.keys() and request.session['login']:
+        access_token = request.session['access_token']
+        url = "https://api.xiyoulinux.org/users?page=1&per_page=1&access_token=%s" % access_token
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError, e:
+            rtu = {
+                'status': False,
+                'message': 'login out of time!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': json.loads(response.read())
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'user not login!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 获取所有用户信息
+def get_user_by_id(request):
+    if 'id' not in request.GET.keys():
+        rtu = {
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    try:
+        int(request.GET['id'])
+    except Exception:
+        rtu = {
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    if 'login' in request.session.keys() and request.session['login']:
+        access_token = request.session['access_token']
+        url = "https://api.xiyoulinux.org/users/%s?access_token=%s" % (request.GET['id'], access_token)
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError, e:
+            rtu = {
+                'status': False,
+                'message': 'login out of time!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'status': True,
+                'message': 'success',
+                'data': json.loads(response.read())
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'status': False,
+            'message': 'user not login!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
 # 判断用户是否登录
 def is_login(request):
     if 'login' in request.session.keys() and request.session['login']:
-        return True, request.session['user']
+        access_token = request.session['access_token']
+        data = {
+            'access_token': access_token
+        }
+        url = combine_url(GET_USER_INFO_URL, data)
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError, e:
+            request.session['login'] = False
+            return False, 'login out of time!'
+        else:
+            return True, 'login success!'
     else:
-        return False, None
+        return False, 'not login!'
