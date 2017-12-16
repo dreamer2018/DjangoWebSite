@@ -8,61 +8,108 @@ from django.db import models
 
 # Create your models here.
 
-class Anonymous(models.Model):
-    nickname = models.CharField(max_length=20)  # 昵称
-    email = models.CharField(max_length=255)  # 邮件
+# 新闻动态
+class News(models.Model):
+    title = models.CharField(max_length=50)  # 新闻标题
+    content = models.TextField()  # 新闻内容
+    origin = models.TextField()  # 新闻源内容
+    poster = models.CharField(max_length=255, blank=True)  # 新闻图片
+    date = models.DateField()  # 日期
+    time = models.TimeField()  # 时间
+    labels = models.CharField(max_length=30)  # 新闻标签
+    reader = models.IntegerField(default=0)  # 阅读量
+    upvote = models.IntegerField(default=0)  # 点赞量
+    status = models.IntegerField(default=0)  # 新闻状态
 
     def __unicode__(self):
-        return self.nickname
+        return self.title
 
     @staticmethod
-    def insert(nickname, email):
-        anonymous = Anonymous()
-        anonymous.nickname = nickname
-        anonymous.email = email
-        anonymous.save()
-        return True, anonymous.id
+    def insert(title, content, origin, date, time, labels, poster=None, reader=None, upvote=None, status=None):
+        new = News()
+        new.title = title
+        new.content = content
+        new.origin = origin
+        new.date = date
+        new.time = time
+        new.labels = labels
+        if poster is not None:
+            new.poster = poster
+        if reader is not None:
+            new.reader = reader
+        if upvote is not None:
+            new.upvote = upvote
+        if status is not None:
+            new.status = status
+        new.save()
+        return True, new.id
 
     @staticmethod
-    def get_anonymous_by_id(id):
+    def get_all_news():
+        return True, News.objects.all()
+
+    @staticmethod
+    def get_news_by_id(id):
         try:
-            anonymous = Anonymous.objects.get(id=id)
-        except Anonymous.DoesNotExist:
-            return False, "Not Found！"
+            new = News.objects.get(id=id)
+        except News.DoesNotExist:
+            return False, "Not Found!"
         else:
-            return True, anonymous
+            return True, new
 
     @staticmethod
-    def get_all_anonymous():
-        anonymous = Anonymous.objects.all()
-        return True, anonymous
+    def get_news_by_title(title, sign=0):
+        # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
+        if sign == 0:
+            news = News.objects.filter(title__contains=title)
+        else:
+            news = News.objects.filter(title=title)
+        return True, news
 
     @staticmethod
-    def get_anonymous_by_email(email):
-        anonymous = Anonymous.objects.filter(email=email)
-        return True, anonymous
+    def get_news_by_status(status):
+        news = News.objects.filter(status=status)
+        return True, news
 
     @staticmethod
-    def update(id, nickname=None, email=None):
-        status, anonymous = Anonymous.get_anonymous_by_id(id)
-        if not status:
-            return status, anonymous
-        if nickname is not None:
-            anonymous.nickname = nickname
-        if email is not None:
-            anonymous.email = email
-        anonymous.save()
+    def update(id, title=None, content=None, origin=None, date=None, time=None, labels=None, reader=None,
+               upvote=None, poster=None, status=None):
+        sta, new = News.get_news_by_id(id=id)
+        if not sta:
+            return sta, new
+        if title is not None:
+            new.title = title
+        if content is not None:
+            new.content = content
+        if origin is not None:
+            new.origin = origin
+        if date is not None:
+            new.date = date
+        if time is not None:
+            new.time = time
+        if labels is not None:
+            new.labels = labels
+        if reader is not None:
+            new.reader = reader
+        if upvote is not None:
+            new.upvote = upvote
+        if poster is not None:
+            new.poster = poster
+        if status is not None:
+            new.status = status
+        new.save()
         return True, "update success!"
 
     @staticmethod
-    def delete_anonymous_by_id(id):
-        status, anonymous = Anonymous.get_anonymous_by_id(id)
+    def delete_news_by_id(id):
+        status, new = News.get_news_by_id(id=id)
         if not status:
-            return False, anonymous
-        anonymous.delete()
+            return False, new
+        new.delete()
         return True, "delete success"
 
 
+# 活动沙龙
 class Events(models.Model):
     title = models.CharField(max_length=50)  # 活动标题
     content = models.TextField()  # 活动内容
@@ -118,8 +165,12 @@ class Events(models.Model):
             return True, event
 
     @staticmethod
-    def get_events_by_title(title):
-        events = Events.objects.filter(title=title)
+    def get_events_by_title(title, sign=0):
+        # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
+        if sign == 0:
+            events = Events.objects.filter(title__contains=title)
+        else:
+            events = Events.objects.filter(title=title)
         return True, events
 
     @staticmethod
@@ -169,250 +220,7 @@ class Events(models.Model):
         return True, "delete success"
 
 
-class Feedback(models.Model):
-    email = models.CharField(max_length=30)  # 邮箱
-    content = models.TextField()  # 反馈内容
-    date = models.DateField()  # 日期
-    time = models.TimeField()  # 时间
-    status = models.IntegerField(default=0)  # 状态
-
-    def __unicode__(self):
-        return self.id
-
-    @staticmethod
-    def insert(email, content, date, time, status=None):
-        feedback = Feedback()
-        feedback.email = email
-        feedback.content = content
-        feedback.date = date
-        feedback.time = time
-        if status is not None:
-            feedback.status = status
-        feedback.save()
-        return True, feedback.id
-
-    @staticmethod
-    def get_feedback_by_id(id):
-        try:
-            feedback = Feedback.objects.get(id=id)
-        except Feedback.DoesNotExist:
-            return False, "Not Found!"
-        else:
-            return True, feedback
-
-    @staticmethod
-    def get_all_feedback():
-        feedback = Feedback.objects.all()
-        return True, feedback
-
-    @staticmethod
-    def get_feedback_by_content(content):
-        feedback = Feedback.objects.filter(content=content)
-        return True, feedback
-
-    @staticmethod
-    def get_feedback_by_status(status):
-        feedback = Feedback.objects.filter(status=status)
-        return True, feedback
-
-    @staticmethod
-    def update(id, email=None, content=None, date=None, time=None, status=None):
-        sta, feedback = Feedback.get_feedback_by_id(id=id)
-        if not sta:
-            return sta, feedback
-        if email is not None:
-            feedback.email = email
-        if content is not None:
-            feedback.content = content
-        if date is not None:
-            feedback.date = date
-        if time is not None:
-            feedback.time = time
-        if status is not None:
-            feedback.status = status
-        feedback.save()
-        return True, "update success!"
-
-    @staticmethod
-    def delete_feedback_by_id(id):
-        status, feedback = Feedback.get_feedback_by_id(id=id)
-        if not status:
-            return False, feedback
-        feedback.delete()
-        return True, "delete success"
-
-
-class News(models.Model):
-    title = models.CharField(max_length=50)  # 新闻标题
-    content = models.TextField()  # 新闻内容
-    origin = models.TextField()  # 新闻源内容
-    poster = models.CharField(max_length=255, blank=True)  # 新闻图片
-    date = models.DateField()  # 日期
-    time = models.TimeField()  # 时间
-    labels = models.CharField(max_length=30)  # 新闻标签
-    reader = models.IntegerField(default=0)  # 阅读量
-    upvote = models.IntegerField(default=0)  # 点赞量
-    status = models.IntegerField(default=0)  # 新闻状态
-
-    def __unicode__(self):
-        return self.title
-
-    @staticmethod
-    def insert(title, content, origin, date, time, labels, poster=None, reader=None, upvote=None, status=None):
-        new = News()
-        new.title = title
-        new.content = content
-        new.origin = origin
-        new.date = date
-        new.time = time
-        new.labels = labels
-        if poster is not None:
-            new.poster = poster
-        if reader is not None:
-            new.reader = reader
-        if upvote is not None:
-            new.upvote = upvote
-        if status is not None:
-            new.status = status
-        new.save()
-        return True, new.id
-
-    @staticmethod
-    def get_all_news():
-        return True, News.objects.all()
-
-    @staticmethod
-    def get_news_by_id(id):
-        try:
-            new = News.objects.get(id=id)
-        except News.DoesNotExist:
-            return False, "Not Found!"
-        else:
-            return True, new
-
-    @staticmethod
-    def get_news_by_title(title):
-        news = News.objects.filter(title=title)
-        return True, news
-
-    @staticmethod
-    def get_news_by_status(status):
-        news = News.objects.filter(status=status)
-        return True, news
-
-    @staticmethod
-    def update(id, title=None, content=None, origin=None, date=None, time=None, labels=None, reader=None,
-               upvote=None, poster=None, status=None):
-        sta, new = News.get_news_by_id(id=id)
-        if not sta:
-            return sta, new
-        if title is not None:
-            new.title = title
-        if content is not None:
-            new.content = content
-        if origin is not None:
-            new.origin = origin
-        if date is not None:
-            new.date = date
-        if time is not None:
-            new.time = time
-        if labels is not None:
-            new.labels = labels
-        if reader is not None:
-            new.reader = reader
-        if upvote is not None:
-            new.upvote = upvote
-        if poster is not None:
-            new.poster = poster
-        if status is not None:
-            new.status = status
-        new.save()
-        return True, "update success!"
-
-    @staticmethod
-    def delete_news_by_id(id):
-        status, new = News.get_news_by_id(id=id)
-        if not status:
-            return False, new
-        new.delete()
-        return True, "delete success"
-
-
-class Pictures(models.Model):
-    content = models.CharField(max_length=255)  # 照片简介
-    link = models.CharField(max_length=255)  # 照片链接
-    date = models.DateField()  # 日期
-    time = models.TimeField()  # 时间
-    upvote = models.IntegerField(default=0)  # 点赞量
-    status = models.IntegerField(default=0)  # 照片状态
-
-    def __unicode__(self):
-        return self.id
-
-    @staticmethod
-    def insert(content, link, date, time, status=None):
-        picture = Pictures()
-        picture.content = content
-        picture.link = link
-        picture.date = date
-        picture.time = time
-        if status is not None:
-            picture.status = status
-        picture.save()
-        return True, picture.id
-
-    @staticmethod
-    def get_picture_by_id(id):
-        try:
-            picture = Pictures.objects.get(id=id)
-        except Pictures.DoesNotExist:
-            return False, "Not Found!"
-        else:
-            return True, picture
-
-    @staticmethod
-    def get_all_pictures():
-        pictures = Pictures.objects.all()
-        return True, pictures
-
-    @staticmethod
-    def get_pictures_by_content(content):
-        pictures = Pictures.objects.filter(content=content)
-        return True, pictures
-
-    @staticmethod
-    def get_pictures_by_status(status):
-        pictures = Pictures.objects.filter(status=status)
-        return True, pictures
-
-    @staticmethod
-    def update(id, content=None, link=None, date=None, time=None, upvote=None, status=None):
-        sta, picture = Pictures.get_picture_by_id(id=id)
-        if not sta:
-            return status, picture
-        if content is not None:
-            picture.content = content
-        if link is not None:
-            picture.link = link
-        if date is not None:
-            picture.date = date
-        if time is not None:
-            picture.time = time
-        if upvote is not None:
-            picture.upvote = upvote
-        if status is not None:
-            picture.status = status
-        picture.save()
-        return True, "update success!"
-
-    @staticmethod
-    def delete_picture_by_id(id):
-        sta, picture = Pictures.get_picture_by_id(id=id)
-        if not sta:
-            return False, picture
-        picture.delete()
-        return True, "delete success"
-
+# 项目展示
 
 class Projects(models.Model):
     title = models.CharField(max_length=50)  # 项目标题
@@ -458,8 +266,12 @@ class Projects(models.Model):
             return True, project
 
     @staticmethod
-    def get_projects_by_title(title):
-        projects = Projects.objects.filter(title=title)
+    def get_projects_by_title(title, sign=0):
+        # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
+        if sign == 0:
+            projects = Projects.objects.filter(title__contains=title)
+        else:
+            projects = Projects.objects.filter(title=title)
         return True, projects
 
     @staticmethod
@@ -505,6 +317,168 @@ class Projects(models.Model):
         project.delete()
         return True, "delete success"
 
+
+# 照片墙
+class Pictures(models.Model):
+    content = models.CharField(max_length=255)  # 照片简介
+    link = models.CharField(max_length=255)  # 照片链接
+    date = models.DateField()  # 日期
+    time = models.TimeField()  # 时间
+    upvote = models.IntegerField(default=0)  # 点赞量
+    status = models.IntegerField(default=0)  # 照片状态
+
+    def __unicode__(self):
+        return self.id
+
+    @staticmethod
+    def insert(content, link, date, time, status=None):
+        picture = Pictures()
+        picture.content = content
+        picture.link = link
+        picture.date = date
+        picture.time = time
+        if status is not None:
+            picture.status = status
+        picture.save()
+        return True, picture.id
+
+    @staticmethod
+    def get_picture_by_id(id):
+        try:
+            picture = Pictures.objects.get(id=id)
+        except Pictures.DoesNotExist:
+            return False, "Not Found!"
+        else:
+            return True, picture
+
+    @staticmethod
+    def get_all_pictures():
+        pictures = Pictures.objects.all()
+        return True, pictures
+
+    @staticmethod
+    def get_pictures_by_content(content, sign=0):
+        # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
+        if sign == 0:
+            pictures = Pictures.objects.filter(content__contains=content)
+        else:
+            pictures = Pictures.objects.filter(content=content)
+        return True, pictures
+
+    @staticmethod
+    def get_pictures_by_status(status):
+        pictures = Pictures.objects.filter(status=status)
+        return True, pictures
+
+    @staticmethod
+    def update(id, content=None, link=None, date=None, time=None, upvote=None, status=None):
+        sta, picture = Pictures.get_picture_by_id(id=id)
+        if not sta:
+            return status, picture
+        if content is not None:
+            picture.content = content
+        if link is not None:
+            picture.link = link
+        if date is not None:
+            picture.date = date
+        if time is not None:
+            picture.time = time
+        if upvote is not None:
+            picture.upvote = upvote
+        if status is not None:
+            picture.status = status
+        picture.save()
+        return True, "update success!"
+
+    @staticmethod
+    def delete_picture_by_id(id):
+        sta, picture = Pictures.get_picture_by_id(id=id)
+        if not sta:
+            return False, picture
+        picture.delete()
+        return True, "delete success"
+
+
+# 反馈
+
+class Feedback(models.Model):
+    email = models.CharField(max_length=30)  # 邮箱
+    content = models.TextField()  # 反馈内容
+    date = models.DateField()  # 日期
+    time = models.TimeField()  # 时间
+    status = models.IntegerField(default=0)  # 状态
+
+    def __unicode__(self):
+        return self.id
+
+    @staticmethod
+    def insert(email, content, date, time, status=None):
+        feedback = Feedback()
+        feedback.email = email
+        feedback.content = content
+        feedback.date = date
+        feedback.time = time
+        if status is not None:
+            feedback.status = status
+        feedback.save()
+        return True, feedback.id
+
+    @staticmethod
+    def get_feedback_by_id(id):
+        try:
+            feedback = Feedback.objects.get(id=id)
+        except Feedback.DoesNotExist:
+            return False, "Not Found!"
+        else:
+            return True, feedback
+
+    @staticmethod
+    def get_all_feedback():
+        feedback = Feedback.objects.all()
+        return True, feedback
+
+    @staticmethod
+    def get_feedback_by_content(content, sign=0):
+        # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
+        if sign == 0:
+            feedback = Feedback.objects.filter(content__contains=content)
+        else:
+            feedback = Feedback.objects.filter(content=content)
+        return True, feedback
+
+    @staticmethod
+    def get_feedback_by_status(status):
+        feedback = Feedback.objects.filter(status=status)
+        return True, feedback
+
+    @staticmethod
+    def update(id, email=None, content=None, date=None, time=None, status=None):
+        sta, feedback = Feedback.get_feedback_by_id(id=id)
+        if not sta:
+            return sta, feedback
+        if email is not None:
+            feedback.email = email
+        if content is not None:
+            feedback.content = content
+        if date is not None:
+            feedback.date = date
+        if time is not None:
+            feedback.time = time
+        if status is not None:
+            feedback.status = status
+        feedback.save()
+        return True, "update success!"
+
+    @staticmethod
+    def delete_feedback_by_id(id):
+        status, feedback = Feedback.get_feedback_by_id(id=id)
+        if not status:
+            return False, feedback
+        feedback.delete()
+        return True, "delete success"
+
+
+# 评论获取
 
 class Comments(models.Model):
     user = models.IntegerField()  # 评论者
@@ -602,6 +576,108 @@ class Comments(models.Model):
         return True, "delete success"
 
 
+# 匿名用户
+class Anonymous(models.Model):
+    nickname = models.CharField(max_length=20)  # 昵称
+    email = models.CharField(max_length=255)  # 邮件
+
+    def __unicode__(self):
+        return self.nickname
+
+    @staticmethod
+    def insert(nickname, email):
+        anonymous = Anonymous()
+        anonymous.nickname = nickname
+        anonymous.email = email
+        anonymous.save()
+        return True, anonymous.id
+
+    @staticmethod
+    def get_anonymous_by_id(id):
+        try:
+            anonymous = Anonymous.objects.get(id=id)
+        except Anonymous.DoesNotExist:
+            return False, "Not Found！"
+        else:
+            return True, anonymous
+
+    @staticmethod
+    def get_all_anonymous():
+        anonymous = Anonymous.objects.all()
+        return True, anonymous
+
+    @staticmethod
+    def get_anonymous_by_email(email):
+        anonymous = Anonymous.objects.filter(email=email)
+        return True, anonymous
+
+    @staticmethod
+    def update(id, nickname=None, email=None):
+        status, anonymous = Anonymous.get_anonymous_by_id(id)
+        if not status:
+            return status, anonymous
+        if nickname is not None:
+            anonymous.nickname = nickname
+        if email is not None:
+            anonymous.email = email
+        anonymous.save()
+        return True, "update success!"
+
+    @staticmethod
+    def delete_anonymous_by_id(id):
+        status, anonymous = Anonymous.get_anonymous_by_id(id)
+        if not status:
+            return False, anonymous
+        anonymous.delete()
+        return True, "delete success"
+
+
+# 开发者用户
+
+class Devuser(models.Model):
+    uid = models.IntegerField()
+    pid = models.IntegerField()
+
+    def __unicode__(self):
+        return self.id
+
+    @staticmethod
+    def insert(uid, pid):
+        devuser = Devuser()
+        devuser.uid = uid
+        devuser.pid = pid
+        devuser.save()
+        return True, devuser.id
+
+    @staticmethod
+    def get_devuser_by_id(id):
+        try:
+            devuser = Devuser.objects.get(id=id)
+        except Devuser.DoesNotExist:
+            return False, "Not Found!"
+        else:
+            return True, devuser
+
+    @staticmethod
+    def get_devuser_by_pid(pid):
+        devuser = Devuser.objects.filter(pid=pid)
+        return True, devuser
+
+    @staticmethod
+    def get_all_devuser():
+        devuser = Devuser.objects.all()
+        return True, devuser
+
+    @staticmethod
+    def delete_devuser_by_id(id):
+        sta, devuser = Devuser.get_devuser_by_id(id=id)
+        if not sta:
+            return False, devuser
+        devuser.delete()
+        return True, "delete success"
+
+
+# 报名记录
 class Enrolled(models.Model):
     obj = models.IntegerField()  # 报名对象
     uid = models.IntegerField()  # 报名者id
@@ -672,47 +748,4 @@ class Enrolled(models.Model):
         if not sta:
             return False, enrolled
         enrolled.delete()
-        return True, "delete success"
-
-
-class Devuser(models.Model):
-    uid = models.IntegerField()
-    pid = models.IntegerField()
-
-    def __unicode__(self):
-        return self.id
-
-    @staticmethod
-    def insert(uid, pid):
-        devuser = Devuser()
-        devuser.uid = uid
-        devuser.pid = pid
-        devuser.save()
-        return True, devuser.id
-
-    @staticmethod
-    def get_devuser_by_id(id):
-        try:
-            devuser = Devuser.objects.get(id=id)
-        except Devuser.DoesNotExist:
-            return False, "Not Found!"
-        else:
-            return True, devuser
-
-    @staticmethod
-    def get_devuser_by_pid(pid):
-        devuser = Devuser.objects.filter(pid=pid)
-        return True, devuser
-
-    @staticmethod
-    def get_all_devuser():
-        devuser = Devuser.objects.all()
-        return True, devuser
-
-    @staticmethod
-    def delete_devuser_by_id(id):
-        sta, devuser = Devuser.get_devuser_by_id(id=id)
-        if not sta:
-            return False, devuser
-        devuser.delete()
         return True, "delete success"
