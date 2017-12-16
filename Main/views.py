@@ -26,7 +26,14 @@ def get_news(request):
         if len(request.GET) == 0:
             return get_all_news(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_news_by_id(request)
@@ -34,12 +41,15 @@ def get_news(request):
                 return get_news_by_title(request)
             if 'status' in request.GET.keys():
                 return get_news_by_status(request)
-    rtu = {
-        'status': False,
-        'message': 'invalid argument',
-    }
-    js = json.dumps(rtu)
-    return HttpResponse(js)
+    else:
+        # 请求方法错误
+        rtu = {
+            'code': 105,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
 
 
 # 获取所有的新闻
@@ -64,6 +74,7 @@ def get_all_news(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(news),
@@ -73,6 +84,7 @@ def get_all_news(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -88,6 +100,7 @@ def get_news_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -110,6 +123,7 @@ def get_news_by_id(request):
                 'status': news.status
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -117,6 +131,7 @@ def get_news_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -148,6 +163,7 @@ def get_news_by_title(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(news),
@@ -157,6 +173,7 @@ def get_news_by_title(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -172,6 +189,7 @@ def get_news_by_status(request):
         sta = int(str_status)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -201,6 +219,7 @@ def get_news_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(news),
@@ -228,6 +247,7 @@ def add_news(request):
                 poster = request.POST['poster']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -240,6 +260,7 @@ def add_news(request):
             else:
                 sta, id = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
@@ -251,6 +272,7 @@ def add_news(request):
 
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -278,6 +300,7 @@ def alter_news(request):
                 poster = request.POST['poster']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -292,6 +315,7 @@ def alter_news(request):
                 sta, message = News.update(id=nid, title=title, content=content, origin=origin, date=date, time=time,
                                            labels=labels)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': message,
                 'data': {
@@ -302,6 +326,7 @@ def alter_news(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -320,6 +345,7 @@ def alter_news_status(request):
             nid = int(request.POST['nid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -335,6 +361,7 @@ def alter_news_status(request):
                     new.status = 0
                     sta, message = News.update(id=nid, status=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -345,6 +372,7 @@ def alter_news_status(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': new
                 }
@@ -352,6 +380,7 @@ def alter_news_status(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -370,6 +399,7 @@ def delete_news(request):
             nid = int(request.POST['nid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -379,6 +409,7 @@ def delete_news(request):
             sta, new = News.delete_news_by_id(id=nid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': new,
                     'data': {
@@ -389,6 +420,7 @@ def delete_news(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': new
                 }
@@ -396,6 +428,7 @@ def delete_news(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -419,6 +452,7 @@ def get_events(request):
             if 'status' in request.GET.keys():
                 return get_events_by_status(request)
     rtu = {
+        'code': 104,
         'status': False,
         'message': 'invalid argument',
     }
@@ -450,6 +484,7 @@ def get_all_events(request):
             }
             data.append(dic)
         rtu = {
+            'code': 200,
             'status': True,
             'message': 'success',
             'all_count': len(events),
@@ -459,6 +494,7 @@ def get_all_events(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -474,6 +510,7 @@ def get_events_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -498,6 +535,7 @@ def get_events_by_id(request):
                 'status': events.status
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -505,6 +543,7 @@ def get_events_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -537,6 +576,7 @@ def get_events_by_title(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(events),
@@ -546,6 +586,7 @@ def get_events_by_title(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -561,6 +602,7 @@ def get_events_by_status(request):
         sta = int(str_status)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -592,6 +634,7 @@ def get_events_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(events),
@@ -620,6 +663,7 @@ def add_events(request):
                 poster = request.POST['poster']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -633,6 +677,7 @@ def add_events(request):
                 sta, id = Events.insert(title=title, content=content, origin=origin, date=date, time=time,
                                         address=address, labels=labels)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
@@ -644,6 +689,7 @@ def add_events(request):
 
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -672,6 +718,7 @@ def alter_events(request):
                 poster = request.POST['poster']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -685,6 +732,7 @@ def alter_events(request):
                 sta, message = Events.update(id=eid, title=title, content=content, origin=origin, date=date,
                                              time=time, address=address, labels=labels)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': message,
                 'data': {
@@ -695,6 +743,7 @@ def alter_events(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -713,6 +762,7 @@ def alter_events_status(request):
             eid = int(request.POST['eid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -728,6 +778,7 @@ def alter_events_status(request):
                     events.status = 0
                     sta, message = Events.update(id=eid, status=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -738,6 +789,7 @@ def alter_events_status(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': events
                 }
@@ -745,6 +797,7 @@ def alter_events_status(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -764,6 +817,7 @@ def delete_events(request):
             eid = int(request.POST['eid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -773,6 +827,7 @@ def delete_events(request):
             sta, events = Events.delete_events_by_id(id=eid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': events,
                     'data': {
@@ -783,6 +838,7 @@ def delete_events(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': events
                 }
@@ -790,6 +846,7 @@ def delete_events(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -813,8 +870,9 @@ def get_projects(request):
             if 'status' in request.GET.keys():
                 return get_projects_by_status(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -828,7 +886,7 @@ def get_all_projects(request):
         data = []
         for item in projects:
             dic = {
-                'pid': item.pid,
+                'pid': item.id,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -842,6 +900,7 @@ def get_all_projects(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(projects),
@@ -851,6 +910,7 @@ def get_all_projects(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -866,6 +926,7 @@ def get_projects_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -888,6 +949,7 @@ def get_projects_by_id(request):
                 'status': projects.status
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -895,6 +957,7 @@ def get_projects_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -911,7 +974,7 @@ def get_projects_by_title(request):
         data = []
         for item in projects:
             dic = {
-                'pid': item.pid,
+                'pid': item.id,
                 'title': item.title,
                 'content': item.content,
                 'origin': item.origin,
@@ -925,6 +988,7 @@ def get_projects_by_title(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(projects),
@@ -933,7 +997,9 @@ def get_projects_by_title(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
     else:
+
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -949,6 +1015,7 @@ def get_projects_by_status(request):
         sta = int(str_status)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -964,7 +1031,7 @@ def get_projects_by_status(request):
             data = []
             for item in projects:
                 dic = {
-                    'pid': item.pid,
+                    'pid': item.id,
                     'title': item.title,
                     'content': item.content,
                     'origin': item.origin,
@@ -978,6 +1045,7 @@ def get_projects_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(projects),
@@ -1005,6 +1073,7 @@ def add_projects(request):
                 poster = request.POST['poster']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1018,6 +1087,7 @@ def add_projects(request):
                 sta, id = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
                                           time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
@@ -1029,6 +1099,7 @@ def add_projects(request):
 
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1056,6 +1127,7 @@ def alter_projects(request):
                 poster = request.POST['poster']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1069,6 +1141,7 @@ def alter_projects(request):
                 sta, message = Projects.update(id=pid, title=title, content=content, origin=origin, link=link,
                                                date=date, time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': message,
                 'data': {
@@ -1079,6 +1152,7 @@ def alter_projects(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1097,6 +1171,7 @@ def alter_projects_status(request):
             pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1112,6 +1187,7 @@ def alter_projects_status(request):
                     projects.status = 0
                     sta, message = projects.update(id=pid, status=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -1122,6 +1198,7 @@ def alter_projects_status(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': projects
                 }
@@ -1129,6 +1206,7 @@ def alter_projects_status(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1148,6 +1226,7 @@ def delete_projects(request):
             pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1157,6 +1236,7 @@ def delete_projects(request):
             sta, projects = Projects.delete_project_by_id(id=pid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': projects,
                     'data': {
@@ -1167,6 +1247,7 @@ def delete_projects(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': projects
                 }
@@ -1174,6 +1255,7 @@ def delete_projects(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1199,8 +1281,9 @@ def get_pictures(request):
             if 'status' in request.GET.keys():
                 return get_pictures_by_status(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -1224,6 +1307,7 @@ def get_all_pictures(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(pictures),
@@ -1233,6 +1317,7 @@ def get_all_pictures(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1248,6 +1333,7 @@ def get_pictures_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -1266,6 +1352,7 @@ def get_pictures_by_id(request):
                 'status': pictures.status
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -1273,6 +1360,7 @@ def get_pictures_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1299,6 +1387,7 @@ def get_pictures_by_content(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(pictures),
@@ -1308,6 +1397,7 @@ def get_pictures_by_content(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1323,6 +1413,7 @@ def get_pictures_by_status(request):
         sta = int(str_status)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -1348,6 +1439,7 @@ def get_pictures_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(pictures),
@@ -1370,6 +1462,7 @@ def add_pictures(request):
             time = request.POST['time']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1378,6 +1471,7 @@ def add_pictures(request):
         else:
             sta, id = Pictures.insert(content=content, link=link, date=date, time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
@@ -1388,6 +1482,7 @@ def add_pictures(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1410,6 +1505,7 @@ def alter_pictures(request):
             time = request.POST['time']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1418,6 +1514,7 @@ def alter_pictures(request):
         else:
             sta, message = Pictures.update(id=pid, content=content, link=link, date=date, time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': message,
                 'data': {
@@ -1428,6 +1525,7 @@ def alter_pictures(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1446,6 +1544,7 @@ def alter_pictures_status(request):
             pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1461,6 +1560,7 @@ def alter_pictures_status(request):
                     picture.status = 0
                     sta, message = Pictures.update(id=pid, status=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -1471,6 +1571,7 @@ def alter_pictures_status(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': picture
                 }
@@ -1478,6 +1579,7 @@ def alter_pictures_status(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1497,6 +1599,7 @@ def delete_pictures(request):
             pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1506,6 +1609,7 @@ def delete_pictures(request):
             sta, pictures = Pictures.delete_picture_by_id(id=pid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': pictures,
                     'data': {
@@ -1516,6 +1620,7 @@ def delete_pictures(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': pictures
                 }
@@ -1523,6 +1628,7 @@ def delete_pictures(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1548,8 +1654,9 @@ def get_feedback(request):
             if 'status' in request.GET.keys():
                 return get_feedback_by_status(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -1572,6 +1679,7 @@ def get_all_feedback(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(feedback),
@@ -1581,6 +1689,7 @@ def get_all_feedback(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1596,6 +1705,7 @@ def get_feedback_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -1613,6 +1723,7 @@ def get_feedback_by_id(request):
                 'status': feedback.status
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -1620,6 +1731,7 @@ def get_feedback_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1645,6 +1757,7 @@ def get_feedback_by_content(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(feedback),
@@ -1654,6 +1767,7 @@ def get_feedback_by_content(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1669,6 +1783,7 @@ def get_feedback_by_status(request):
         sta = int(str_status)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -1693,6 +1808,7 @@ def get_feedback_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(feedback),
@@ -1715,6 +1831,7 @@ def add_feedback(request):
             time = request.POST['time']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1723,16 +1840,18 @@ def add_feedback(request):
         else:
             sta, id = Feedback.insert(content=content, email=email, date=date, time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
-                    'fid': id
+                    'id': id
                 }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1751,6 +1870,7 @@ def alter_feedback_status(request):
             fid = int(request.POST['fid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1766,6 +1886,7 @@ def alter_feedback_status(request):
                     feedback.status = 0
                     sta, message = Feedback.update(id=fid, status=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -1776,6 +1897,7 @@ def alter_feedback_status(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': feedback
                 }
@@ -1783,6 +1905,7 @@ def alter_feedback_status(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1802,6 +1925,7 @@ def delete_feedback(request):
             fid = int(request.POST['fid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -1811,16 +1935,18 @@ def delete_feedback(request):
             sta, feedback = Feedback.delete_feedback_by_id(id=fid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': feedback,
                     'data': {
-                        'fid': fid
+                        'id': fid
                     }
                 }
                 js = json.dumps(rtu)
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': feedback
                 }
@@ -1828,6 +1954,7 @@ def delete_feedback(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -1857,8 +1984,9 @@ def get_comments(request):
             if 'status' in request.GET.keys():
                 return get_comments_by_status(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -1885,6 +2013,7 @@ def get_all_comments(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(comments),
@@ -1894,6 +2023,7 @@ def get_all_comments(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1909,6 +2039,7 @@ def get_comments_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -1930,6 +2061,7 @@ def get_comments_by_id(request):
                 'status': comments.status
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -1937,6 +2069,7 @@ def get_comments_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -1953,6 +2086,7 @@ def get_comments_by_user(request):
         status, comments = Comments.get_comments_by_user(user=user)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -1976,6 +2110,7 @@ def get_comments_by_user(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(comments),
@@ -1985,6 +2120,7 @@ def get_comments_by_user(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 106,
                 'status': False,
                 'message': 'not found!',
             }
@@ -2001,6 +2137,7 @@ def get_comments_by_type(request):
         status, comments = Comments.get_comments_by_type(type=type)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -2024,6 +2161,7 @@ def get_comments_by_type(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(comments),
@@ -2033,6 +2171,7 @@ def get_comments_by_type(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 106,
                 'status': False,
                 'message': 'not found!',
             }
@@ -2049,6 +2188,7 @@ def get_comments_by_obj(request):
         status, comments = Comments.get_comments_by_obj(obj=obj)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -2072,6 +2212,7 @@ def get_comments_by_obj(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(comments),
@@ -2081,6 +2222,7 @@ def get_comments_by_obj(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 106,
                 'status': False,
                 'message': 'not found!',
             }
@@ -2096,6 +2238,7 @@ def get_comments_by_status(request):
         sta = int(str_status)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument'
         }
@@ -2124,6 +2267,7 @@ def get_comments_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(comments),
@@ -2148,6 +2292,7 @@ def add_comments(request):
             time = request.POST['time']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2156,16 +2301,18 @@ def add_comments(request):
         else:
             sta, id = Comments.insert(user=user, o_type=type, obj=obj, content=content, date=date, time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
-                    'cid': id
+                    'id': id
                 }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2185,6 +2332,7 @@ def delete_comments(request):
             cid = int(request.POST['cid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2194,16 +2342,18 @@ def delete_comments(request):
             sta, comments = Comments.delete_comment_by_id(id=cid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': comments,
                     'data': {
-                        'fid': cid
+                        'id': cid
                     }
                 }
                 js = json.dumps(rtu)
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': comments
                 }
@@ -2211,6 +2361,7 @@ def delete_comments(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2235,6 +2386,7 @@ def alter_comments(request):
             time = request.POST['time']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2244,6 +2396,7 @@ def alter_comments(request):
             sta, message = Comments.update(id=cid, user=user, o_type=type, obj=obj, content=content, date=date,
                                            time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': message,
                 'data': {
@@ -2254,6 +2407,7 @@ def alter_comments(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2272,6 +2426,7 @@ def alter_comments_deal(request):
             cid = int(request.POST['cid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2287,6 +2442,7 @@ def alter_comments_deal(request):
                     comments.deal = 0
                     sta, message = comments.update(id=cid, deal=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -2297,6 +2453,7 @@ def alter_comments_deal(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': comments
                 }
@@ -2304,6 +2461,7 @@ def alter_comments_deal(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2322,6 +2480,7 @@ def alter_comments_status(request):
             cid = int(request.POST['cid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2337,6 +2496,7 @@ def alter_comments_status(request):
                     comments.status = 0
                     sta, message = comments.update(id=cid, status=0)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -2347,6 +2507,7 @@ def alter_comments_status(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': comments
                 }
@@ -2354,6 +2515,7 @@ def alter_comments_status(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2378,8 +2540,9 @@ def get_anonymous(request):
             if 'email' in request.GET.keys():
                 return get_anonymous_by_email(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -2399,6 +2562,7 @@ def get_all_anonymous(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(anonymous),
@@ -2408,6 +2572,7 @@ def get_all_anonymous(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -2423,6 +2588,7 @@ def get_anonymous_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -2437,6 +2603,7 @@ def get_anonymous_by_id(request):
                 'nickname': anonymous.nickname
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -2444,6 +2611,7 @@ def get_anonymous_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -2466,6 +2634,7 @@ def get_anonymous_by_email(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(anonymous),
@@ -2475,6 +2644,7 @@ def get_anonymous_by_email(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -2493,6 +2663,7 @@ def add_anonymous(request):
             nickname = request.POST['nickname']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument!',
             }
@@ -2501,68 +2672,24 @@ def add_anonymous(request):
         else:
             sta, id = Anonymous.insert(nickname=nickname, email=email)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
-                    'nid': id
+                    'id': id
                 }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
 
-
-# 更改匿名用户信息
-@csrf_exempt
-def alter_anonymous(request):
-    """/anonymous/alter/"""
-    # if not is_login(request)[0]:
-    #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            nid = int(request.POST['nid'])
-            email = request.POST['email']
-            nickname = request.POST['nickname']
-        except Exception, e:
-            rtu = {
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            sta, anonymous = Anonymous.get_anonymous_by_id(id=nid)
-            if sta:
-                sta, message = Anonymous.update(id=nid, email=email, nickname=nickname)
-                rtu = {
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': anonymous.id
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'status': sta,
-                    'message': anonymous
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
 
 
 # 删除匿名用户信息
@@ -2573,28 +2700,31 @@ def delete_anonymous(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
-            nid = int(request.POST['nid'])
+            aid = int(request.POST['aid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, anonymous = Anonymous.delete_anonymous_by_id(id=nid)
+            sta, anonymous = Anonymous.delete_anonymous_by_id(id=aid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': anonymous,
                     'data': {
-                        'fid': nid
+                        'id': aid
                     }
                 }
                 js = json.dumps(rtu)
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': anonymous
                 }
@@ -2602,6 +2732,7 @@ def delete_anonymous(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2628,8 +2759,9 @@ def get_enrolled(request):
             if 'status' in request.GET.keys():
                 return get_enrolled_by_status(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -2652,6 +2784,7 @@ def get_all_enrolled(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(enrolled),
@@ -2661,6 +2794,7 @@ def get_all_enrolled(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -2676,6 +2810,7 @@ def get_enrolled_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -2693,6 +2828,7 @@ def get_enrolled_by_id(request):
                 "status": enrolled.status,
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -2700,6 +2836,7 @@ def get_enrolled_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -2716,6 +2853,7 @@ def get_enrolled_by_obj(request):
         status, enrolled = Enrolled.get_enrolled_by_obj(obj=obj)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid arguments!'
         }
@@ -2735,6 +2873,7 @@ def get_enrolled_by_obj(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(enrolled),
@@ -2744,6 +2883,7 @@ def get_enrolled_by_obj(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 106,
                 'status': False,
                 'message': 'not found!',
             }
@@ -2760,6 +2900,7 @@ def get_enrolled_by_status(request):
         status, enrolled = Enrolled.get_enrolled_by_status(status=sta)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -2779,6 +2920,7 @@ def get_enrolled_by_status(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(enrolled),
@@ -2788,6 +2930,7 @@ def get_enrolled_by_status(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 106,
                 'status': False,
                 'message': 'not found!',
             }
@@ -2808,6 +2951,7 @@ def add_enrolled(request):
             time = request.POST['time']
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument!',
             }
@@ -2816,16 +2960,18 @@ def add_enrolled(request):
         else:
             sta, id = Enrolled.insert(obj=obj, uid=uid, date=date, time=time)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
-                    'eid': id
+                    'id': id
                 }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2851,6 +2997,7 @@ def alter_enrolled(request):
                 status = int(request.POST['status'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2864,6 +3011,7 @@ def alter_enrolled(request):
                 else:
                     sta, message = Enrolled.update(id=eid, obj=obj, uid=uid, date=date, time=time)
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': message,
                     'data': {
@@ -2874,6 +3022,7 @@ def alter_enrolled(request):
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': enrolled
                 }
@@ -2881,6 +3030,7 @@ def alter_enrolled(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2899,6 +3049,7 @@ def delete_enrolled(request):
             eid = int(request.POST['eid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -2908,16 +3059,18 @@ def delete_enrolled(request):
             sta, enrolled = Enrolled.delete_enrolled_by_id(id=eid)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': enrolled,
                     'data': {
-                        'eid': eid
+                        'id': eid
                     }
                 }
                 js = json.dumps(rtu)
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': enrolled
                 }
@@ -2925,6 +3078,7 @@ def delete_enrolled(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -2948,8 +3102,9 @@ def get_devuser(request):
             if 'pid' in request.GET.keys():
                 return get_devuser_by_pid(request)
     rtu = {
+        'code': 105,
         'status': False,
-        'message': 'invalid argument',
+        'message': 'method error!',
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
@@ -2969,6 +3124,7 @@ def get_all_devuser(request):
             }
             data.append(dic)
         rtu = {
+            'code': 100,
             'status': True,
             'message': 'success',
             'all_count': len(devuser),
@@ -2978,6 +3134,7 @@ def get_all_devuser(request):
         return HttpResponse(js)
     else:
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -2993,6 +3150,7 @@ def get_devuser_by_id(request):
         id = int(str_id)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument!'
         }
@@ -3007,6 +3165,7 @@ def get_devuser_by_id(request):
                 'pid': devuser.pid
             }
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': data
@@ -3014,6 +3173,7 @@ def get_devuser_by_id(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         rtu = {
+            'code': 106,
             'status': False,
             'message': 'not found!',
         }
@@ -3030,6 +3190,7 @@ def get_devuser_by_pid(request):
         status, devuser = Devuser.get_devuser_by_pid(pid=pid)
     except Exception, e:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid arguments!'
         }
@@ -3046,6 +3207,7 @@ def get_devuser_by_pid(request):
                 }
                 data.append(dic)
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'all_count': len(devuser),
@@ -3055,6 +3217,7 @@ def get_devuser_by_pid(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 106,
                 'status': False,
                 'message': 'not found!',
             }
@@ -3073,6 +3236,7 @@ def add_devuser(request):
             pid = int(request.POST['pid'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument!',
             }
@@ -3081,16 +3245,18 @@ def add_devuser(request):
         else:
             sta, id = Devuser.insert(uid=uid, pid=pid)
             rtu = {
+                'code': 100,
                 'status': sta,
                 'message': 'success',
                 'data': {
-                    'eid': id
+                    'id': id
                 }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -3109,6 +3275,7 @@ def delete_devuser(request):
             did = int(request.POST['did'])
         except Exception, e:
             rtu = {
+                'code': 104,
                 'status': False,
                 'message': 'invalid argument',
             }
@@ -3118,16 +3285,18 @@ def delete_devuser(request):
             sta, devuser = Devuser.delete_devuser_by_id(id=did)
             if sta:
                 rtu = {
+                    'code': 100,
                     'status': sta,
                     'message': devuser,
                     'data': {
-                        'eid': did
+                        'id': did
                     }
                 }
                 js = json.dumps(rtu)
                 return HttpResponse(js)
             else:
                 rtu = {
+                    'code': 106,
                     'status': sta,
                     'message': devuser
                 }
@@ -3135,6 +3304,7 @@ def delete_devuser(request):
                 return HttpResponse(js)
     else:
         rtu = {
+            'code': 105,
             'status': False,
             'message': 'method error!',
         }
@@ -3155,6 +3325,7 @@ def get_current_user_info(request):
             response = urllib.urlopen(params)
         except IOError, e:
             rtu = {
+                'code': 101,
                 'status': False,
                 'message': 'login out of time!',
             }
@@ -3162,6 +3333,7 @@ def get_current_user_info(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': json.loads(response.read())
@@ -3170,6 +3342,7 @@ def get_current_user_info(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 107,
             'status': False,
             'message': 'user not login!',
         }
@@ -3181,12 +3354,13 @@ def get_current_user_info(request):
 def get_all_user_info(request):
     if 'login' in request.session.keys() and request.session['login']:
         access_token = request.session['access_token']
-        url = "https://api.xiyoulinux.org/users?page=1&per_page=1&access_token=%s" % access_token
+        url = "https://api.xiyoulinux.org/users?page=1&per_page=1000&access_token=%s" % access_token
         params = urllib.unquote(url)
         try:
             response = urllib.urlopen(params)
         except IOError, e:
             rtu = {
+                'code': 101,
                 'status': False,
                 'message': 'login out of time!',
             }
@@ -3194,6 +3368,7 @@ def get_all_user_info(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': json.loads(response.read())
@@ -3202,6 +3377,7 @@ def get_all_user_info(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 107,
             'status': False,
             'message': 'user not login!',
         }
@@ -3213,6 +3389,7 @@ def get_all_user_info(request):
 def get_user_by_id(request):
     if 'id' not in request.GET.keys():
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument',
         }
@@ -3222,6 +3399,7 @@ def get_user_by_id(request):
         int(request.GET['id'])
     except Exception:
         rtu = {
+            'code': 104,
             'status': False,
             'message': 'invalid argument',
         }
@@ -3235,6 +3413,7 @@ def get_user_by_id(request):
             response = urllib.urlopen(params)
         except IOError, e:
             rtu = {
+                'code': 101,
                 'status': False,
                 'message': 'login out of time!',
             }
@@ -3242,6 +3421,7 @@ def get_user_by_id(request):
             return HttpResponse(js)
         else:
             rtu = {
+                'code': 100,
                 'status': True,
                 'message': 'success',
                 'data': json.loads(response.read())
@@ -3250,6 +3430,7 @@ def get_user_by_id(request):
             return HttpResponse(js)
     else:
         rtu = {
+            'code': 107,
             'status': False,
             'message': 'user not login!',
         }
@@ -3267,7 +3448,7 @@ def is_login(request):
         url = combine_url(GET_USER_INFO_URL, data)
         params = urllib.unquote(url)
         try:
-            response = urllib.urlopen(params)
+            urllib.urlopen(params)
         except IOError, e:
             request.session['login'] = False
             return False, 'login out of time!'
@@ -3275,3 +3456,36 @@ def is_login(request):
             return True, 'login success!'
     else:
         return False, 'not login!'
+
+
+# 403
+def permission_denied(request):
+    rtu = {
+        'code': 107,
+        'status': False,
+        'message': 'Forbidden',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 404
+def page_not_found(request):
+    rtu = {
+        'code': 102,
+        'status': False,
+        'message': 'page not found',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 500
+def server_error(request):
+    rtu = {
+        'code': 103,
+        'status': False,
+        'message': 'server error!',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)

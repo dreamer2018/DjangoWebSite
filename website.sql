@@ -340,7 +340,7 @@ all_count:1
 }
  */
 /*
-  comment status 说明：
+  enrolled status 说明：
           0 : 已回复
           1 :  未回复
    */

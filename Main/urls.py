@@ -42,7 +42,6 @@ mian_url = [
     url(r'^comments/status/$', views.alter_comments_status),
     url(r'^anonymous/$', views.get_anonymous),
     url(r'^anonymous/add/$', views.add_anonymous),
-    url(r'^anonymous/alter/$', views.alter_anonymous),
     url(r'^anonymous/delete/$', views.delete_anonymous),
     url(r'^enrolled/$', views.get_enrolled),
     url(r'^enrolled/add/$', views.add_enrolled),

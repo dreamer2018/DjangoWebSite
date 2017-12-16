@@ -15,9 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from Main import urls
+from Main import urls, views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
 ]
 urlpatterns += urls.mian_url
+
+# handler403 = views.permission_denied
+# handler404 = views.page_not_found
+# handler500 = views.server_error
