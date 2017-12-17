@@ -11,8 +11,22 @@ from django.views.decorators.csrf import csrf_exempt
 from OAuth_Django_SDK import combine_url, GET_USER_INFO_URL
 import urllib
 
-
 # Create your views here.
+
+# 定义禁用与启用
+ALLOW = 1
+FORBID = 0
+
+# 定义最大递归深度
+DEEPTH = 20
+
+# 定义一些评论对象的宏
+COMM_NEWS = 0
+COMM_EVENTS = 1
+COMM_PICTURES = 2
+COMM_PROJECTS = 3
+COMM_SELF = 4
+
 
 def test(request):
     anonymous = Anonymous()
@@ -2339,7 +2353,8 @@ def get_comments_by_type_obj_status(request):
                     'time': item.time.strftime('%H:%M:%S'),
                     'upvote': item.upvote,
                     'deal': item.deal,
-                    'status': item.status
+                    'status': item.status,
+                    'comm': get_comment_use_recursion(item.id, 0)
                 }
                 data.append(dic)
             rtu = {
@@ -3606,3 +3621,46 @@ def server_error(request):
     }
     js = json.dumps(rtu)
     return HttpResponse(js)
+
+
+def get_comment_use_recursion(cid, deepth):
+    comments = Comments.get_comments_by_type_obj_status(typ=COMM_SELF, obj=cid, status=ALLOW)[1]
+    comm = []
+    for item in comments:
+        if deepth > DEEPTH:
+            dic = {
+                'cid': item.id,
+                'user': item.user,
+                'o_type': item.o_type,
+                'obj': item.obj,
+                'content': item.content,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'upvote': item.upvote,
+                'deal': item.deal,
+                'status': item.status,
+                'comm': []
+            }
+        else:
+            dic = {
+                'cid': item.id,
+                'user': item.user,
+                'o_type': item.o_type,
+                'obj': item.obj,
+                'content': item.content,
+                'date': item.date.strftime('%Y-%m-%d'),
+                'time': item.time.strftime('%H:%M:%S'),
+                'upvote': item.upvote,
+                'deal': item.deal,
+                'status': item.status,
+                'comm': get_comment_use_recursion(item.id, deepth+1)
+            }
+        comm.append(dic)
+    return comm
+
+
+
+
+
+
+
