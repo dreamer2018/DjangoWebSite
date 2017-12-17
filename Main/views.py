@@ -3624,7 +3624,7 @@ def server_error(request):
 
 
 def get_comment_use_recursion(cid, deepth):
-    comments = Comments.get_comments_by_type_obj_status(typ=COMM_SELF, obj=cid, status=ALLOW)[1]
+    sta, comments = Comments.get_comments_by_type_obj_status(typ=COMM_SELF, obj=cid, status=ALLOW)
     comm = []
     for item in comments:
         if deepth > DEEPTH:
