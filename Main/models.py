@@ -536,8 +536,8 @@ class Comments(models.Model):
         return True, comments
 
     @staticmethod
-    def get_comments_by_status(status):
-        comment = Comments.objects.filter(status=status)
+    def get_comments_by_type_obj_status(typ, obj, status):
+        comment = Comments.objects.filter(o_type=typ, obj=obj, status=status)
         return True, comment
 
     @staticmethod

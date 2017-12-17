@@ -37,10 +37,18 @@ def get_news(request):
         else:
             if 'id' in request.GET.keys():
                 return get_news_by_id(request)
-            if 'title' in request.GET.keys():
+            elif 'title' in request.GET.keys():
                 return get_news_by_title(request)
-            if 'status' in request.GET.keys():
+            elif 'status' in request.GET.keys():
                 return get_news_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     else:
         # 请求方法错误
         rtu = {
@@ -443,14 +451,28 @@ def get_events(request):
         if len(request.GET) == 0:
             return get_all_events(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_events_by_id(request)
-            if 'title' in request.GET.keys():
+            elif 'title' in request.GET.keys():
                 return get_events_by_title(request)
-            if 'status' in request.GET.keys():
+            elif 'status' in request.GET.keys():
                 return get_events_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 104,
         'status': False,
@@ -861,14 +883,28 @@ def get_projects(request):
         if len(request.GET) == 0:
             return get_all_projects(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_projects_by_id(request)
-            if 'title' in request.GET.keys():
+            elif 'title' in request.GET.keys():
                 return get_projects_by_title(request)
-            if 'status' in request.GET.keys():
+            elif 'status' in request.GET.keys():
                 return get_projects_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 105,
         'status': False,
@@ -1272,14 +1308,28 @@ def get_pictures(request):
         if len(request.GET) == 0:
             return get_all_pictures(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_pictures_by_id(request)
-            if 'content' in request.GET.keys():
+            elif 'content' in request.GET.keys():
                 return get_pictures_by_content(request)
-            if 'status' in request.GET.keys():
+            elif 'status' in request.GET.keys():
                 return get_pictures_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 105,
         'status': False,
@@ -1649,10 +1699,18 @@ def get_feedback(request):
         else:
             if 'id' in request.GET.keys():
                 return get_feedback_by_id(request)
-            if 'content' in request.GET.keys():
+            elif 'content' in request.GET.keys():
                 return get_feedback_by_content(request)
-            if 'status' in request.GET.keys():
+            elif 'status' in request.GET.keys():
                 return get_feedback_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 105,
         'status': False,
@@ -1971,18 +2029,35 @@ def get_comments(request):
         if len(request.GET) == 0:
             return get_all_comments(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            if len(
+                    request.GET) == 3 and 'type' in request.GET.keys() and 'obj' in request.GET.keys() and 'status' in request.GET.keys():
+                return get_comments_by_type_obj_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_comments_by_id(request)
-            if 'user' in request.GET.keys():
+            elif 'user' in request.GET.keys():
                 return get_comments_by_user(request)
-            if 'type' in request.GET.keys():
+            elif 'type' in request.GET.keys():
                 return get_comments_by_type(request)
             if 'obj' in request.GET.keys():
                 return get_comments_by_obj(request)
-            if 'status' in request.GET.keys():
-                return get_comments_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+
     rtu = {
         'code': 105,
         'status': False,
@@ -2231,11 +2306,12 @@ def get_comments_by_obj(request):
 
 
 # 通过status获取反馈内容
-def get_comments_by_status(request):
+def get_comments_by_type_obj_status(request):
     """/comments/{status}"""
     try:
-        str_status = request.GET['status']
-        sta = int(str_status)
+        typ = int(request.GET['type'])
+        obj = int(request.GET['obj'])
+        sta = int(request.GET['status'])
     except Exception, e:
         rtu = {
             'code': 104,
@@ -2246,10 +2322,10 @@ def get_comments_by_status(request):
         return HttpResponse(js)
     else:
         # 当status 为 0 时，监测是否登陆
-        if sta == 0:
-            if not is_login(request)[0]:
-                return HttpResponseRedirect('/login/?next=' + request.path)
-        status, comments = Comments.get_comments_by_status(status=sta)
+        # if sta == 0:
+        #     if not is_login(request)[0]:
+        #         return HttpResponseRedirect('/login/?next=' + request.path)
+        status, comments = Comments.get_comments_by_type_obj_status(typ=typ, obj=obj, status=sta)
         if status:
             data = []
             for item in comments:
@@ -2533,12 +2609,26 @@ def get_anonymous(request):
         if len(request.GET) == 0:
             return get_all_anonymous(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_anonymous_by_id(request)
-            if 'email' in request.GET.keys():
+            elif 'email' in request.GET.keys():
                 return get_anonymous_by_email(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 105,
         'status': False,
@@ -2691,7 +2781,6 @@ def add_anonymous(request):
         return HttpResponse(js)
 
 
-
 # 删除匿名用户信息
 @csrf_exempt
 def delete_anonymous(request):
@@ -2750,14 +2839,28 @@ def get_enrolled(request):
         if len(request.GET) == 0:
             return get_all_enrolled(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_enrolled_by_id(request)
-            if 'obj' in request.GET.keys():
+            elif 'obj' in request.GET.keys():
                 return get_enrolled_by_obj(request)
-            if 'status' in request.GET.keys():
+            elif 'status' in request.GET.keys():
                 return get_enrolled_by_status(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 105,
         'status': False,
@@ -3095,12 +3198,26 @@ def get_devuser(request):
         if len(request.GET) == 0:
             return get_all_devuser(request)
         elif len(request.GET) > 1 or len(request.GET) < 0:
-            pass
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         else:
             if 'id' in request.GET.keys():
                 return get_devuser_by_id(request)
-            if 'pid' in request.GET.keys():
+            elif 'pid' in request.GET.keys():
                 return get_devuser_by_pid(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
     rtu = {
         'code': 105,
         'status': False,
