@@ -5,6 +5,7 @@
 """
 
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator
 from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments, Enrolled, Devuser
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -27,6 +28,10 @@ COMM_PICTURES = 2
 COMM_PROJECTS = 3
 COMM_SELF = 4
 
+# 定义分页宏
+REQ_PAGE = 1  # 请求页
+PAGE_SIZE = 20  # 页面大小
+
 
 def test(request):
     anonymous = Anonymous()
@@ -37,9 +42,29 @@ def test(request):
 def get_news(request):
     """/news/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_news(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_news(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             # 参数错误
             rtu = {
                 'code': 104,
@@ -52,9 +77,9 @@ def get_news(request):
             if 'id' in request.GET.keys():
                 return get_news_by_id(request)
             elif 'title' in request.GET.keys():
-                return get_news_by_title(request)
+                return get_news_by_title(request, page=req_page, page_size=page_size)
             elif 'status' in request.GET.keys():
-                return get_news_by_status(request)
+                return get_news_by_status(request, page=req_page, page_size=page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -75,11 +100,13 @@ def get_news(request):
 
 
 # 获取所有的新闻
-def get_all_news(request):
+def get_all_news(request, page, page_size):
     """/news"""
     status, news = News.get_all_news()
     if status:
         data = []
+        page_data = pagination_tool(news, req_page=page, page_size=page_size)
+        news = page_data['data']
         for item in news:
             dic = {
                 'nid': item.id,
@@ -99,7 +126,10 @@ def get_all_news(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(news),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -113,6 +143,15 @@ def get_all_news(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
+
+#
+# rtu = {
+#        'all_count': p.count,  # 所有数量
+#        'page_count': p.num_pages,  # 分页数量
+#        'page_size': page_size,  # 页面大小
+#        'req_page': req_page,  # 请求页
+#        'data': req.object_list  # 请求数据
+#    }
 
 # 通过id获取新闻
 def get_news_by_id(request):
@@ -162,13 +201,15 @@ def get_news_by_id(request):
 
 
 # 通过title获取新闻
-def get_news_by_title(request):
+def get_news_by_title(request, page, page_size):
     """/news/{title}"""
     # 获取所有News
     title = request.GET['title']
     status, news = News.get_news_by_title(title=title)
     if status:
         data = []
+        page_data = pagination_tool(news, req_page=page, page_size=page_size)
+        news = page_data['data']
         for item in news:
             dic = {
                 'nid': item.id,
@@ -188,7 +229,10 @@ def get_news_by_title(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(news),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -204,7 +248,7 @@ def get_news_by_title(request):
 
 
 # 通过status获取新闻内容
-def get_news_by_status(request):
+def get_news_by_status(request, page, page_size):
     """/news/{status}"""
     try:
         str_status = request.GET['status']
@@ -225,6 +269,8 @@ def get_news_by_status(request):
         status, news = News.get_news_by_status(status=sta)
         if status:
             data = []
+            page_data = pagination_tool(news, req_page=page, page_size=page_size)
+            news = page_data['data']
             for item in news:
                 dic = {
                     'nid': item.id,
@@ -244,7 +290,10 @@ def get_news_by_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(news),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -462,9 +511,30 @@ def delete_news(request):
 def get_events(request):
     """/events/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_events(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+        if len(request.GET) - arg_count == 0:
+            return get_all_events(request, page=req_page, page_size=page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -476,9 +546,9 @@ def get_events(request):
             if 'id' in request.GET.keys():
                 return get_events_by_id(request)
             elif 'title' in request.GET.keys():
-                return get_events_by_title(request)
+                return get_events_by_title(request, page=req_page, page_size=page_size)
             elif 'status' in request.GET.keys():
-                return get_events_by_status(request)
+                return get_events_by_status(request, page=req_page, page_size=page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -497,11 +567,13 @@ def get_events(request):
 
 
 # 获取所有的新闻
-def get_all_events(request):
+def get_all_events(request, page, page_size):
     """/events"""
     status, events = Events.get_all_events()
     if status:
         data = []
+        page_data = pagination_tool(events, req_page=page, page_size=page_size)
+        events = page_data['data']
         for item in events:
             dic = {
                 'eid': item.id,
@@ -523,7 +595,10 @@ def get_all_events(request):
             'code': 200,
             'status': True,
             'message': 'success',
-            'all_count': len(events),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -588,12 +663,14 @@ def get_events_by_id(request):
 
 
 # 通过title获取活动内容
-def get_events_by_title(request):
+def get_events_by_title(request, page, page_size):
     """/events/{title}"""
     title = request.GET['title']
     status, events = Events.get_events_by_title(title=title)
     if status:
         data = []
+        page_data = pagination_tool(events, req_page=page, page_size=page_size)
+        events = page_data['data']
         for item in events:
             dic = {
                 'eid': item.id,
@@ -615,7 +692,10 @@ def get_events_by_title(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(events),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -631,7 +711,7 @@ def get_events_by_title(request):
 
 
 # 通过status获取活动内容
-def get_events_by_status(request):
+def get_events_by_status(request, page, page_size):
     """/events/{status}"""
     try:
         str_status = request.GET['status']
@@ -652,6 +732,8 @@ def get_events_by_status(request):
         status, events = Events.get_events_by_status(status=sta)
         if status:
             data = []
+            page_data = pagination_tool(events, req_page=page, page_size=page_size)
+            events = page_data['data']
             for item in events:
                 dic = {
                     'eid': item.id,
@@ -673,7 +755,10 @@ def get_events_by_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(events),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -894,9 +979,31 @@ def delete_events(request):
 def get_projects(request):
     """/projects/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_projects(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+        if len(request.GET) - arg_count == 0:
+            return get_all_projects(request, page=req_page, page_size=page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -908,9 +1015,9 @@ def get_projects(request):
             if 'id' in request.GET.keys():
                 return get_projects_by_id(request)
             elif 'title' in request.GET.keys():
-                return get_projects_by_title(request)
+                return get_projects_by_title(request, page=req_page, page_size=page_size)
             elif 'status' in request.GET.keys():
-                return get_projects_by_status(request)
+                return get_projects_by_status(request, page=req_page, page_size=page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -1016,12 +1123,14 @@ def get_projects_by_id(request):
 
 
 # 通过title获取项目内容
-def get_projects_by_title(request):
+def get_projects_by_title(request, page, page_size):
     """/projects/{title}"""
     title = request.GET['title']
     status, projects = Projects.get_projects_by_title(title=title)
     if status:
         data = []
+        page_data = pagination_tool(projects, req_page=page, page_size=page_size)
+        projects = page_data['data']
         for item in projects:
             dic = {
                 'pid': item.id,
@@ -1041,7 +1150,10 @@ def get_projects_by_title(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(projects),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -1058,7 +1170,7 @@ def get_projects_by_title(request):
 
 
 # 通过status获取项目内容
-def get_projects_by_status(request):
+def get_projects_by_status(request, page, page_size):
     """/projects/{status}"""
     try:
         str_status = request.GET['status']
@@ -1079,6 +1191,8 @@ def get_projects_by_status(request):
         status, projects = Projects.get_projects_by_status(status=sta)
         if status:
             data = []
+            page_data = pagination_tool(projects, req_page=page, page_size=page_size)
+            projects = page_data['data']
             for item in projects:
                 dic = {
                     'pid': item.id,
@@ -1098,7 +1212,10 @@ def get_projects_by_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(projects),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -1319,9 +1436,30 @@ def delete_projects(request):
 def get_pictures(request):
     """/pictures/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_pictures(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
+        if len(request.GET) - arg_count == 0:
+            return get_all_pictures(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -1333,9 +1471,9 @@ def get_pictures(request):
             if 'id' in request.GET.keys():
                 return get_pictures_by_id(request)
             elif 'content' in request.GET.keys():
-                return get_pictures_by_content(request)
+                return get_pictures_by_content(request, req_page, page_size)
             elif 'status' in request.GET.keys():
-                return get_pictures_by_status(request)
+                return get_pictures_by_status(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -1354,11 +1492,13 @@ def get_pictures(request):
 
 
 # 获取所有的图片信息
-def get_all_pictures(request):
+def get_all_pictures(request, page, page_size):
     """/pictures"""
     status, pictures = Pictures.get_all_pictures()
     if status:
         data = []
+        page_data = pagination_tool(pictures, req_page=page, page_size=page_size)
+        pictures = page_data['data']
         for item in pictures:
             dic = {
                 'pid': item.id,
@@ -1374,7 +1514,10 @@ def get_all_pictures(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(pictures),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -1433,12 +1576,14 @@ def get_pictures_by_id(request):
 
 
 # 通过content获取图片内容
-def get_pictures_by_content(request):
+def get_pictures_by_content(request, page, page_size):
     """/pictures/{content}"""
     content = request.GET['content']
     status, pictures = Pictures.get_pictures_by_content(content=content)
     if status:
         data = []
+        page_data = pagination_tool(pictures, req_page=page, page_size=page_size)
+        pictures = page_data['data']
         for item in pictures:
             dic = {
                 'pid': item.id,
@@ -1454,7 +1599,10 @@ def get_pictures_by_content(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(pictures),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -1470,7 +1618,7 @@ def get_pictures_by_content(request):
 
 
 # 通过status获取图片内容
-def get_pictures_by_status(request):
+def get_pictures_by_status(request, page, page_size):
     """/pictures/{status}"""
     try:
         str_status = request.GET['status']
@@ -1491,6 +1639,8 @@ def get_pictures_by_status(request):
         status, pictures = Pictures.get_pictures_by_status(status=sta)
         if status:
             data = []
+            page_data = pagination_tool(pictures, req_page=page, page_size=page_size)
+            pictures = page_data['data']
             for item in pictures:
                 dic = {
                     'pid': item.id,
@@ -1506,7 +1656,10 @@ def get_pictures_by_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(pictures),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -1706,17 +1859,37 @@ def delete_pictures(request):
 def get_feedback(request):
     """/feedback/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_feedback(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_feedback(request, page=req_page, page_size=page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             pass
         else:
             if 'id' in request.GET.keys():
                 return get_feedback_by_id(request)
             elif 'content' in request.GET.keys():
-                return get_feedback_by_content(request)
+                return get_feedback_by_content(request, page=req_page, page_size=page_size)
             elif 'status' in request.GET.keys():
-                return get_feedback_by_status(request)
+                return get_feedback_by_status(request, page=req_page, page_size=page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -1735,11 +1908,13 @@ def get_feedback(request):
 
 
 # 获取所有的反馈信息
-def get_all_feedback(request):
+def get_all_feedback(request, page, page_size):
     """/feedback"""
     status, feedback = Feedback.get_all_feedback()
     if status:
         data = []
+        page_data = pagination_tool(feedback, req_page=page, page_size=page_size)
+        feedback = page_data['data']
         for item in feedback:
             dic = {
                 'fid': item.id,
@@ -1754,7 +1929,10 @@ def get_all_feedback(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(feedback),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -1812,12 +1990,14 @@ def get_feedback_by_id(request):
 
 
 # 通过content获取反馈内容
-def get_feedback_by_content(request):
+def get_feedback_by_content(request, page, page_size):
     """/feedback/{content}"""
     content = request.GET['content']
     status, feedback = Feedback.get_feedback_by_content(content=content)
     if status:
         data = []
+        page_data = pagination_tool(feedback, req_page=page, page_size=page_size)
+        feedback = page_data['data']
         for item in feedback:
             dic = {
                 'pid': item.id,
@@ -1832,7 +2012,10 @@ def get_feedback_by_content(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(feedback),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -1848,7 +2031,7 @@ def get_feedback_by_content(request):
 
 
 # 通过status获取反馈内容
-def get_feedback_by_status(request):
+def get_feedback_by_status(request, page, page_size):
     """/feedback/{status}"""
     try:
         str_status = request.GET['status']
@@ -1869,6 +2052,8 @@ def get_feedback_by_status(request):
         status, feedback = Feedback.get_feedback_by_status(status=sta)
         if status:
             data = []
+            page_data = pagination_tool(feedback, req_page=page, page_size=page_size)
+            feedback = page_data['data']
             for item in feedback:
                 dic = {
                     'pid': item.id,
@@ -1883,7 +2068,10 @@ def get_feedback_by_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(feedback),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -2040,12 +2228,32 @@ def delete_feedback(request):
 def get_comments(request):
     """/comments/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_comments(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_comments(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             if len(
-                    request.GET) == 3 and 'type' in request.GET.keys() and 'obj' in request.GET.keys() and 'status' in request.GET.keys():
-                return get_comments_by_type_obj_status(request)
+                    request.GET) - arg_count == 3 and 'type' in request.GET.keys() and 'obj' in request.GET.keys() and 'status' in request.GET.keys():
+                return get_comments_by_type_obj_status(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -2058,11 +2266,11 @@ def get_comments(request):
             if 'id' in request.GET.keys():
                 return get_comments_by_id(request)
             elif 'user' in request.GET.keys():
-                return get_comments_by_user(request)
+                return get_comments_by_user(request, req_page, page_size)
             elif 'type' in request.GET.keys():
-                return get_comments_by_type(request)
+                return get_comments_by_type(request, req_page, page_size)
             if 'obj' in request.GET.keys():
-                return get_comments_by_obj(request)
+                return get_comments_by_obj(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -2082,11 +2290,13 @@ def get_comments(request):
 
 
 # 获取所有的评论信息
-def get_all_comments(request):
+def get_all_comments(request, page, page_size):
     """/comments"""
     status, comments = Comments.get_all_comments()
     if status:
         data = []
+        page_data = pagination_tool(comments, req_page=page, page_size=page_size)
+        comments = page_data['data']
         for item in comments:
             dic = {
                 'cid': item.id,
@@ -2105,7 +2315,10 @@ def get_all_comments(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(comments),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -2167,7 +2380,7 @@ def get_comments_by_id(request):
 
 
 # 通过用户ID获取评论内容
-def get_comments_by_user(request):
+def get_comments_by_user(request, page, page_size):
     """/comments/{user}"""
     try:
         str_user = request.GET['user']
@@ -2184,6 +2397,8 @@ def get_comments_by_user(request):
     else:
         if status:
             data = []
+            page_data = pagination_tool(comments, req_page=page, page_size=page_size)
+            comments = page_data['data']
             for item in comments:
                 dic = {
                     'cid': item.id,
@@ -2202,7 +2417,10 @@ def get_comments_by_user(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(comments),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -2218,7 +2436,7 @@ def get_comments_by_user(request):
 
 
 # 通过o_type获取评论内容
-def get_comments_by_type(request):
+def get_comments_by_type(request, page, page_size):
     """/comments/{type}"""
     try:
         str_type = request.GET['type']
@@ -2235,6 +2453,8 @@ def get_comments_by_type(request):
     else:
         if status:
             data = []
+            page_data = pagination_tool(comments, req_page=page, page_size=page_size)
+            comments = page_data['data']
             for item in comments:
                 dic = {
                     'cid': item.id,
@@ -2253,7 +2473,10 @@ def get_comments_by_type(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(comments),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -2269,7 +2492,7 @@ def get_comments_by_type(request):
 
 
 # 通过评论对象获取评论内容
-def get_comments_by_obj(request):
+def get_comments_by_obj(request, page, page_size):
     """/comments/{type}"""
     try:
         str_obj = request.GET['obj']
@@ -2286,6 +2509,8 @@ def get_comments_by_obj(request):
     else:
         if status:
             data = []
+            page_data = pagination_tool(comments, req_page=page, page_size=page_size)
+            comments = page_data['data']
             for item in comments:
                 dic = {
                     'cid': item.id,
@@ -2304,7 +2529,10 @@ def get_comments_by_obj(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(comments),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -2320,7 +2548,7 @@ def get_comments_by_obj(request):
 
 
 # 通过status获取反馈内容
-def get_comments_by_type_obj_status(request):
+def get_comments_by_type_obj_status(request, page, page_size):
     """/comments/{status}"""
     try:
         typ = int(request.GET['type'])
@@ -2342,6 +2570,8 @@ def get_comments_by_type_obj_status(request):
         status, comments = Comments.get_comments_by_type_obj_status(typ=typ, obj=obj, status=sta)
         if status:
             data = []
+            page_data = pagination_tool(comments, req_page=page, page_size=page_size)
+            comments = page_data['data']
             for item in comments:
                 dic = {
                     'cid': item.id,
@@ -2361,7 +2591,10 @@ def get_comments_by_type_obj_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(comments),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -2621,9 +2854,30 @@ def alter_comments_status(request):
 def get_anonymous(request):
     """/anonymous/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_anonymous(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_anonymous(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -2635,7 +2889,7 @@ def get_anonymous(request):
             if 'id' in request.GET.keys():
                 return get_anonymous_by_id(request)
             elif 'email' in request.GET.keys():
-                return get_anonymous_by_email(request)
+                return get_anonymous_by_email(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -2654,11 +2908,13 @@ def get_anonymous(request):
 
 
 # 获取所有的匿名用户信息
-def get_all_anonymous(request):
+def get_all_anonymous(request, page, page_size):
     """/anonymous"""
     status, anonymous = Anonymous.get_all_anonymous()
     if status:
         data = []
+        page_data = pagination_tool(anonymous, req_page=page, page_size=page_size)
+        anonymous = page_data['data']
         for item in anonymous:
             dic = {
                 'aid': item.id,
@@ -2670,7 +2926,10 @@ def get_all_anonymous(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(anonymous),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -2725,12 +2984,14 @@ def get_anonymous_by_id(request):
 
 
 # 通过email获取匿名用户
-def get_anonymous_by_email(request):
+def get_anonymous_by_email(request, page, page_size):
     """/anonymous/{content}"""
     email = request.GET['email']
     status, anonymous = Anonymous.get_anonymous_by_email(email=email)
     if status:
         data = []
+        page_data = pagination_tool(anonymous, req_page=page, page_size=page_size)
+        anonymous = page_data['data']
         for item in anonymous:
             dic = {
                 'aid': item.id,
@@ -2742,7 +3003,10 @@ def get_anonymous_by_email(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(anonymous),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -2851,9 +3115,29 @@ def delete_anonymous(request):
 def get_enrolled(request):
     """/enrolled/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_enrolled(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_enrolled(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -2865,9 +3149,9 @@ def get_enrolled(request):
             if 'id' in request.GET.keys():
                 return get_enrolled_by_id(request)
             elif 'obj' in request.GET.keys():
-                return get_enrolled_by_obj(request)
+                return get_enrolled_by_obj(request, req_page, page_size)
             elif 'status' in request.GET.keys():
-                return get_enrolled_by_status(request)
+                return get_enrolled_by_status(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -2886,11 +3170,13 @@ def get_enrolled(request):
 
 
 # 获取所有报名信息
-def get_all_enrolled(request):
+def get_all_enrolled(request, page, page_size):
     """/enrolled"""
     status, enrolled = Enrolled.get_all_enrolled()
     if status:
         data = []
+        page_data = pagination_tool(enrolled, req_page=page, page_size=page_size)
+        enrolled = page_data['data']
         for item in enrolled:
             dic = {
                 'eid': item.id,
@@ -2905,7 +3191,10 @@ def get_all_enrolled(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(enrolled),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -2963,7 +3252,7 @@ def get_enrolled_by_id(request):
 
 
 # 通过obj获取报名信息
-def get_enrolled_by_obj(request):
+def get_enrolled_by_obj(request, page, page_size):
     """/enrolled/{obj}"""
     try:
         str_obj = request.GET['obj']
@@ -2980,6 +3269,8 @@ def get_enrolled_by_obj(request):
     else:
         if status:
             data = []
+            page_data = pagination_tool(enrolled, req_page=page, page_size=page_size)
+            enrolled = page_data['data']
             for item in enrolled:
                 dic = {
                     'eid': item.id,
@@ -2994,7 +3285,10 @@ def get_enrolled_by_obj(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(enrolled),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -3010,7 +3304,7 @@ def get_enrolled_by_obj(request):
 
 
 # 通过status获取报名信息
-def get_enrolled_by_status(request):
+def get_enrolled_by_status(request, page, page_size):
     """/enrolled/{status}"""
     try:
         str_status = request.GET['status']
@@ -3027,6 +3321,8 @@ def get_enrolled_by_status(request):
     else:
         if status:
             data = []
+            page_data = pagination_tool(enrolled, req_page=page, page_size=page_size)
+            enrolled = page_data['data']
             for item in enrolled:
                 dic = {
                     'eid': item.id,
@@ -3041,7 +3337,10 @@ def get_enrolled_by_status(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(enrolled),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -3210,9 +3509,29 @@ def delete_enrolled(request):
 def get_devuser(request):
     """/devuser/"""
     if request.method == 'GET':
-        if len(request.GET) == 0:
-            return get_all_devuser(request)
-        elif len(request.GET) > 1 or len(request.GET) < 0:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_devuser(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -3224,7 +3543,7 @@ def get_devuser(request):
             if 'id' in request.GET.keys():
                 return get_devuser_by_id(request)
             elif 'pid' in request.GET.keys():
-                return get_devuser_by_pid(request)
+                return get_devuser_by_pid(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -3243,11 +3562,13 @@ def get_devuser(request):
 
 
 # 获取所有开发者信息
-def get_all_devuser(request):
+def get_all_devuser(request, page, page_size):
     """/devuser"""
     status, devuser = Devuser.get_all_devuser()
     if status:
         data = []
+        page_data = pagination_tool(devuser, req_page=page, page_size=page_size)
+        devuser = page_data['data']
         for item in devuser:
             dic = {
                 'did': item.id,
@@ -3259,7 +3580,10 @@ def get_all_devuser(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(devuser),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -3314,7 +3638,7 @@ def get_devuser_by_id(request):
 
 
 # 通过obj获取开发者信息
-def get_devuser_by_pid(request):
+def get_devuser_by_pid(request, page, page_size):
     """/devuser/{obj}"""
     try:
         str_pid = request.GET['pid']
@@ -3331,6 +3655,8 @@ def get_devuser_by_pid(request):
     else:
         if status:
             data = []
+            page_data = pagination_tool(devuser, req_page=page, page_size=page_size)
+            devuser = page_data['data']
             for item in devuser:
                 dic = {
                     'did': item.id,
@@ -3342,7 +3668,10 @@ def get_devuser_by_pid(request):
                 'code': 100,
                 'status': True,
                 'message': 'success',
-                'all_count': len(devuser),
+                'all_count': page_data['all_count'],
+                'page_size': page_data['page_size'],
+                'page_count': page_data['page_count'],
+                'curr_page': page_data['req_page'],
                 'data': data
             }
             js = json.dumps(rtu)
@@ -3485,8 +3814,28 @@ def get_current_user_info(request):
 # 获取所有用户信息
 def get_all_user_info(request):
     if 'login' in request.session.keys() and request.session['login']:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception, e:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
         access_token = request.session['access_token']
-        url = "https://api.xiyoulinux.org/users?page=1&per_page=1000&access_token=%s" % access_token
+        url = "https://api.xiyoulinux.org/users?page=%d&per_page=%d&access_token=%s" % (req_page, page_size, access_token)
         params = urllib.unquote(url)
         try:
             response = urllib.urlopen(params)
@@ -3653,14 +4002,27 @@ def get_comment_use_recursion(cid, deepth):
                 'upvote': item.upvote,
                 'deal': item.deal,
                 'status': item.status,
-                'comm': get_comment_use_recursion(item.id, deepth+1)
+                'comm': get_comment_use_recursion(item.id, deepth + 1)
             }
         comm.append(dic)
     return comm
 
 
+def pagination_tool(data, req_page, page_size):
+    if page_size <= 0:  # 页面大小小于0，设置页面大小为1
+        page_size = 1
+    p = Paginator(data, page_size)
 
+    if p.num_pages < req_page:  # 如果请求页面大于最大页面，设置请求页面为最大页面
+        req_page = p.num_pages
+    req = p.page(req_page)
 
+    rtu = {
+        'all_count': p.count,  # 所有数量
+        'page_count': p.num_pages,  # 分页数量
+        'page_size': page_size,  # 页面大小
+        'req_page': req_page,  # 请求页
+        'data': req.object_list  # 请求数据
+    }
 
-
-
+    return rtu

@@ -86,6 +86,7 @@ def oauth_callback(request, next=None):
     if next is not None:
         return HttpResponseRedirect(next)
     rtu = {
+        'code': 100,
         'status': True,
         'message': 'login success'
     }
