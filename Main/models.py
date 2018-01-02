@@ -609,7 +609,7 @@ class Anonymous(models.Model):
 
     @staticmethod
     def get_anonymous_by_email(email):
-        anonymous = Anonymous.objects.filter(email=email)
+        anonymous = Anonymous.objects.filter(email__contains=email)
         return True, anonymous
 
     @staticmethod

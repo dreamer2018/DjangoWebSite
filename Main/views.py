@@ -1036,11 +1036,13 @@ def get_projects(request):
 
 
 # 获取所有的项目信息
-def get_all_projects(request):
+def get_all_projects(request, page, page_size):
     """/projects"""
     status, projects = Projects.get_all_projects()
     if status:
         data = []
+        page_data = pagination_tool(projects, req_page=page, page_size=page_size)
+        projects = page_data['data']
         for item in projects:
             dic = {
                 'pid': item.id,
@@ -1060,7 +1062,10 @@ def get_all_projects(request):
             'code': 100,
             'status': True,
             'message': 'success',
-            'all_count': len(projects),
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
             'data': data
         }
         js = json.dumps(rtu)
@@ -2881,7 +2886,7 @@ def get_anonymous(request):
             rtu = {
                 'code': 104,
                 'status': False,
-                'message': 'invalid argument',
+                'message': 'invalid argument!',
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
@@ -2894,7 +2899,7 @@ def get_anonymous(request):
                 rtu = {
                     'code': 104,
                     'status': False,
-                    'message': 'invalid argument',
+                    'message': 'invalid argument!',
                 }
                 js = json.dumps(rtu)
                 return HttpResponse(js)
@@ -3835,7 +3840,8 @@ def get_all_user_info(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         access_token = request.session['access_token']
-        url = "https://api.xiyoulinux.org/users?page=%d&per_page=%d&access_token=%s" % (req_page, page_size, access_token)
+        url = "https://api.xiyoulinux.org/users?page=%d&per_page=%d&access_token=%s" % (
+        req_page, page_size, access_token)
         params = urllib.unquote(url)
         try:
             response = urllib.urlopen(params)
