@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments, Devuser
+from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments, Devuser, Blog
 
 # Register your models here.
 admin.register(Anonymous)
@@ -11,3 +11,4 @@ admin.register(Pictures)
 admin.register(Feedback)
 admin.register(Comments)
 admin.register(Devuser)
+admin.register(Blog)

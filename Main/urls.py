@@ -10,6 +10,10 @@ import OAuth_Django_SDK
 mian_url = [
     url(r'^test/$', views.test),  # /test/
     url(r'^login/$', OAuth_Django_SDK.oauth_login),  # /login/
+    url(r'^blog/$', views.get_blog),  # /blog/
+    url(r'^blog/add/$', views.add_blog),  # /blog/add
+    url(r'^blog/status/$', views.alter_blog_status),  # /blog/status/
+    url(r'^blog/delete/$', views.delete_blog),  # /blog/delete/
     url(r'^news/$', views.get_news),  # /news/
     url(r'^news/add/$', views.add_news),  # /news/add/
     url(r'^news/alter/$', views.alter_news),  # /news/alter/
