@@ -1,9 +1,9 @@
 /*=============================================*/
 /*    西邮Linux兴趣小组官网 数据库设计            */
-/*    version：0.1                             */
+/*    version：1.0                             */
 /*    mysql：  5.x above                       */
 /*    author: zhoupan                          */
-/*    time:   2017.10.30 19：45                */
+/*    time:   2018.4.16 15:57                */
 /*=============================================*/
 DROP DATABASE IF EXISTS DjangoWebSite;
 DROP TABLE IF EXISTS anonymous;
@@ -15,6 +15,24 @@ DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS enrolled;
 DROP TABLE IF EXISTS devuser;
+DROP TABLE IF EXISTS blog;
+
+/*==============================================================*/
+/* Table: blog      博客                                        */
+/*==============================================================*/
+
+ CREATE TABLE blog (
+  id int(11) PRIMARY KEY AUTO_INCREMENT, # ID
+  title varchar(50) NOT NULL, # 标题
+  author varchar(20) NOT NULL, # 作者
+  date date NOT NULL, # 日期
+  time time NOT NULL, # 时间
+  summary longtext NOT NULL, # 概要
+  url varchar(256) NOT NULL, # url
+  status int(11) NOT NULL, # 状态
+)
+
+
 
 /*==============================================================*/
 /* Table: anonymous      匿名用户                               */

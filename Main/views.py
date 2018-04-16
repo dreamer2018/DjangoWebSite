@@ -38,7 +38,7 @@ def test(request):
     return HttpResponse(len(request.GET))
 
 
-# /news/
+# /blog/
 def get_blog(request):
     """/blog/"""
     if request.method == 'GET':
@@ -101,7 +101,7 @@ def get_blog(request):
 
 # 获取所有的文章
 def get_all_blogs(request, page, page_size):
-    """/news"""
+    """/blog"""
     status, blogs = Blog.get_all_blogs()
     if status:
         data = []

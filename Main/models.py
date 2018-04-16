@@ -44,7 +44,7 @@ class Blog(models.Model):
   def get_blog_by_id(id):
     try:
       blog = Blog.objects.get(id=id)
-    except News.DoesNotExist:
+    except Blog.DoesNotExist:
       return False, "Not Found!"
     else:
       return True, blog
@@ -65,10 +65,11 @@ class Blog(models.Model):
 
   @staticmethod
   def alter_blog_status(id, status):
-    status, blog = Blog.objects.get(id=id)
-    if not status:
+    sta, blog = Blog.get_blog_by_id(id)
+    if not sta:
       return False, blog
     blog.status = status
+    blog.save()
     return True, "alter success"
   
 
