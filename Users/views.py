@@ -6,7 +6,7 @@
 
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
-from models import Anonymous, Events, News, Projects, Pictures, Feedback, Comments, Enrolled, Devuser
+from models import Anonymous, Devuser
 import json
 from django.views.decorators.csrf import csrf_exempt
 from OAuth_Django_SDK import combine_url, GET_USER_INFO_URL
@@ -559,6 +559,205 @@ def delete_devuser(request):
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
+
+
+# 获取用户信息
+def get_current_user_info(request):
+    if 'login' in request.session.keys() and request.session['login']:
+        access_token = request.session['access_token']
+        data = {
+            'access_token': access_token
+        }
+        url = combine_url(GET_USER_INFO_URL, data)
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError:
+            rtu = {
+                'code': 101,
+                'status': False,
+                'message': 'login out of time!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'code': 100,
+                'status': True,
+                'message': 'success',
+                'data': json.loads(response.read())
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 107,
+            'status': False,
+            'message': 'user not login!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 获取所有用户信息
+def get_all_user_info(request):
+    if 'login' in request.session.keys() and request.session['login']:
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        access_token = request.session['access_token']
+        url = "https://api.xiyoulinux.org/users?page=%d&per_page=%d&access_token=%s" % (
+            req_page, page_size, access_token)
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError:
+            rtu = {
+                'code': 101,
+                'status': False,
+                'message': 'login out of time!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'code': 100,
+                'status': True,
+                'message': 'success',
+                'data': json.loads(response.read())
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 107,
+            'status': False,
+            'message': 'user not login!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 获取所有用户信息
+def get_user_by_id(request):
+    if 'id' not in request.GET.keys():
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    try:
+        int(request.GET['id'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    if 'login' in request.session.keys() and request.session['login']:
+        access_token = request.session['access_token']
+        url = "https://api.xiyoulinux.org/users/%s?access_token=%s" % (request.GET['id'], access_token)
+        params = urllib.unquote(url)
+        try:
+            response = urllib.urlopen(params)
+        except IOError:
+            rtu = {
+                'code': 101,
+                'status': False,
+                'message': 'login out of time!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            rtu = {
+                'code': 100,
+                'status': True,
+                'message': 'success',
+                'data': json.loads(response.read())
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 107,
+            'status': False,
+            'message': 'user not login!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 判断用户是否登录
+def is_login(request):
+    if 'login' in request.session.keys() and request.session['login']:
+        access_token = request.session['access_token']
+        data = {
+            'access_token': access_token
+        }
+        url = combine_url(GET_USER_INFO_URL, data)
+        params = urllib.unquote(url)
+        try:
+            urllib.urlopen(params)
+        except IOError, e:
+            request.session['login'] = False
+            return False, 'login out of time!'
+        else:
+            return True, 'login success!'
+    else:
+        return False, 'not login!'
+
+# 403
+def permission_denied(request):
+    rtu = {
+        'code': 107,
+        'status': False,
+        'message': 'Forbidden',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 404
+def page_not_found(request):
+    rtu = {
+        'code': 102,
+        'status': False,
+        'message': 'page not found',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 500
+def server_error(request):
+    rtu = {
+        'code': 103,
+        'status': False,
+        'message': 'server error!',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
 
 
 def pagination_tool(data, req_page, page_size):

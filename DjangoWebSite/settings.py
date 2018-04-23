@@ -35,7 +35,15 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Main'
+    'Blog',
+    'Comments',
+    'Enrolled',
+    'Events',
+    'Feedback',
+    'News',
+    'Pictures',
+    'Projects',
+    'Users',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -75,13 +83,11 @@ WSGI_APPLICATION = 'DjangoWebSite.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'djangowebsite',
-        'USER': 'website',
-        'PASSWORD': 'pass',
-        'HOST': '192.168.91.128',
+        'USER': 'django',
+        'PASSWORD': 'django',
+        'HOST': '192.168.180.129',
         'PORT': '3306',
     }
 }
