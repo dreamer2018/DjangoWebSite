@@ -391,3 +391,40 @@ all_count:1
 }
  */
 
+
+/* init */
+
+/* Blog */
+INSERT INTO Blog_blog values (1, "C++ 虚函数表解析", "李小明", "2018-01-01", "19:00:00", "前言 C++中的虚函数的作用主要是实现了多态的机制。关于多态，简而言之就是用父类型别的指针指向其子类的实例，然后通过父类的指针调用实际子类的成员函数。这种技术可以让父类的指针有“多种形态”，这是一种泛型技术。所谓泛型技术，说白了就是试图使用不变的代码来实现可变的算法。比如：模板技术，RTTI技术，虚函数技术，要么是试图做到在编译时决议，要么试图做到运行时决议。 关于虚函数的使用方法，我在这里不做过多的阐述。大家可以看看相关的C++的书籍。在这篇文章中，我只想从虚函数的实现机制上面为大家 一个清晰", "http://blog.xiyoulinux.org/detail.jsp?id=5616", 0);
+INSERT INTO Blog_blog values (2, "C++解析", "李明", "2018-01-01", "19:00:00", "前言 C++中的虚函数的作用主要是实现了多态的机制。关于多态，简而言之就是用父类型别的指针指向其子类的实例，然后通过父类的指针调用实际子类的成员函数。这种技术可以让父类的指针有“多种形态”，这是一种泛型技术。所谓泛型技术，说白了就是试图使用不变的代码来实现可变的算法。比如：模板技术，RTTI技术，虚函数技术，要么是试图做到在编译时决议，要么试图做到运行时决议。 关于虚函数的使用方法，我在这里不做过多的阐述。大家可以看看相关的C++的书籍。在这篇文章中，我只想从虚函数的实现机制上面为大家 一个清晰", "http://blog.xiyoulinux.org/detail.jsp?id=5616", 0);
+INSERT INTO Blog_blog values (3, "C++ 虚函数", "李小", "2018-01-11", "21:00:00", "前言 C++中的虚函数的作用主要是实现了多态的机制。关于多态，简而言之就是用父类型别的指针指向其子类的实例，然后通过父类的指针调用实际子类的成员函数。这种技术可以让父类的指针有“多种形态”，这是一种泛型技术。所谓泛型技术，说白了就是试图使用不变的代码来实现可变的算法。比如：模板技术，RTTI技术，虚函数技术，要么是试图做到在编译时决议，要么试图做到运行时决议大家可以看看相关的C++的书籍。在这篇文章中，我只想从虚函数的实现机制上面为大家 一个清晰", "http://blog.xiyoulinux.org/detail.jsp?id=5616", 0);
+/* Comments */
+INSERT INTO Comments_comments values (1, 1, 1, 1, "前言 C++中的虚函数的作用主要是实现了多态的机制。关于多态", "2018-03-04", "06:00:00", 100, 0, 0);
+INSERT INTO Comments_comments values (2, 1, 2, 1, "前言 C++中的虚函数的作用主要是实现了多态的机制。关于多态", "2018-03-04", "06:00:00", 100, 0, 0);
+INSERT INTO Comments_comments values (3, 1, 1, 3, "前言 C++中的虚函数的作用主要是实现了多态的机制。关于多态", "2018-03-04", "06:00:00", 100, 0, 0);
+/* Enrolled */
+INSERT INTO Enrolled_enrolled values (1, 1, 1, "2018-03-04", "06:00:00", 0);
+INSERT INTO Enrolled_enrolled values (2, 1, 1, "2018-03-04", "06:00:00", 0);
+INSERT INTO Enrolled_enrolled values (3, 1, 2, "2018-03-04", "06:00:00", 0);
+/* Events */
+INSERT INTO Events_events values (1, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "2018-03-04", "06:00:00", "西邮", "纳新,小组,开始", 0, 0, 0, 0);
+INSERT INTO Events_events values (2, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "2018-03-04", "06:00:00", "西邮", "纳新,小组,开始", 0, 0, 0, 0);
+INSERT INTO Events_events values (3, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "2018-03-04", "06:00:00", "西邮", "纳新,小组,开始", 0, 0, 0, 0);
+/* Feedback */
+INSERT INTO Feedback_feedback  values (1, "aaa@163.com", "你好，我是西邮的同学", "2018-03-04", "06:00:00", 0);
+INSERT INTO Feedback_feedback  values (2, "aaa@163.com", "你好，我是西邮的同学", "2018-03-04", "06:00:00", 0);
+INSERT INTO Feedback_feedback  values (3, "aaa@163.com", "你好，我是西邮的同学", "2018-03-04", "06:00:00", 0);
+/* News */
+INSERT INTO News_news values (1, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "2018-03-04", "06:00:00", "纳新,小组,开始", 0, 0, 0);
+INSERT INTO News_news values (2, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "2018-03-04", "06:00:00", "纳新,小组,开始", 0, 0, 0);
+INSERT INTO News_news values (3, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "2018-03-04", "06:00:00", "纳新,小组,开始", 0, 0, 0);
+/* Pictures */
+INSERT INTO Pictures_pictures values (1, "小组合照", "https://www.baidu.com/img/bd_logo1.png",  "2018-03-04", "06:00:00", 0, 0);
+INSERT INTO Pictures_pictures values (2, "小组合照", "https://www.baidu.com/img/bd_logo1.png",  "2018-03-04", "06:00:00", 0, 0);
+INSERT INTO Pictures_pictures values (3, "小组合照", "https://www.baidu.com/img/bd_logo1.png",  "2018-03-04", "06:00:00", 0, 0);
+/* Projects */
+INSERT INTO Projects_projects values (1, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00", 0, 0, 0);
+INSERT INTO Projects_projects values (2, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00", 0, 0, 0);
+INSERT INTO Projects_projects values (3, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00", 0, 0, 0);
+
+
