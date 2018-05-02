@@ -16,6 +16,8 @@ Including another URLconf
 from django.conf.urls import include, url, patterns
 from django.contrib import admin
 from Users import views
+from django.conf.urls.static import static
+from django.conf import settings
 urlpatterns = patterns('',
                        url(r'^', include("Users.urls", namespace="user")),
                        url(r'^admin/', include(admin.site.urls)),
@@ -28,7 +30,7 @@ urlpatterns = patterns('',
                        url(r'^pictures/', include('Pictures.urls', namespace='pictures')),
                        url(r'^projects/', include('Projects.urls', namespace='projects')),
                        url(r'^upload/', include('FileUpLoad.urls', namespace='projects')),
-                       )
+                       ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler403 = views.permission_denied
 handler404 = views.page_not_found
