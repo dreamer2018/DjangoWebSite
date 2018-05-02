@@ -18,13 +18,12 @@ from django.conf import settings
 def upload(request):
     if request.method == "POST":
         filename = handle_upload_file(request.FILES['file'], str(request.FILES['file']))
-        host = request.get_host()
         rtu = {
             'code': 100,
             'status': True,
             'message': 'success',
             'data': {
-                'url': "%s%s%s" % (host, settings.MEDIA_URL, filename)
+                'url': "%s%s" % (settings.MEDIA_URL, filename)
             }
         }
         js = json.dumps(rtu)
