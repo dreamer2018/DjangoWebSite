@@ -17,13 +17,14 @@ from django.conf import settings
 @csrf_exempt
 def upload(request):
     if request.method == "POST":
-        path = handle_upload_file(request.FILES['file'], str(request.FILES['file']))
+        filename = handle_upload_file(request.FILES['file'], str(request.FILES['file']))
+        host = request.get_host()
         rtu = {
             'code': 100,
             'status': True,
             'message': 'success',
             'data': {
-                'path': path
+                'path': "%s%s%s" % (host, settings.MEDIA_URL, filename)
             }
         }
         js = json.dumps(rtu)
@@ -40,4 +41,4 @@ def handle_upload_file(file_data, file_name):
     with open(full_path, 'wb+') as destination:
         for chunk in file_data.chunks():
             destination.write(chunk)
-    return full_path
+    return filename
