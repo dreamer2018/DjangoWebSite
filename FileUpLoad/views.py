@@ -36,7 +36,7 @@ def handle_upload_file(file_data, file_name):
     path = settings.MEDIA_ROOT  # 上传文件的保存路径，可以自己指定任意的路径
     if not os.path.exists(path):
         os.makedirs(path)
-    full_path = path + filename
+    full_path = path + '/' + filename
     with open(full_path, 'wb+') as destination:
         for chunk in file_data.chunks():
             destination.write(chunk)
