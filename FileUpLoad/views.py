@@ -24,7 +24,7 @@ def upload(request):
             'status': True,
             'message': 'success',
             'data': {
-                'path': "%s%s%s" % (host, settings.MEDIA_URL, filename)
+                'url': "%s%s%s" % (host, settings.MEDIA_URL, filename)
             }
         }
         js = json.dumps(rtu)
