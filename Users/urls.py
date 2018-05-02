@@ -17,5 +17,5 @@ urlpatterns = patterns('',
                        url(r'^apis/user/me/$', views.get_current_user_info),
                        url(r'^apis/user/$', views.get_all_user_info),
                        url(r'^apis/user/id/$', views.get_user_by_id),
-                       url(r'^apis/login/$', OAuth_Django_SDK.oauth_login),  # /login/
+                       url(r'^login/$', OAuth_Django_SDK.oauth_login),  # /login/
                        )
