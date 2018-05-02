@@ -18,15 +18,15 @@ from django.contrib import admin
 from Users import views
 urlpatterns = patterns('',
                        url(r'^', include("Users.urls", namespace="user")),
-                       url(r'^apis/admin/', include(admin.site.urls)),
-                       url(r'^apis/blog/', include('Blog.urls', namespace='blog')),
-                       url(r'^apis/comments/', include('Comments.urls', namespace='comments')),
-                       url(r'^apis/enrolled/', include('Enrolled.urls', namespace='enrolled')),
-                       url(r'^apis/events/', include('Events.urls', namespace='events')),
-                       url(r'^apis/feedback/', include('Feedback.urls', namespace='feedback')),
-                       url(r'^apis/news/', include('News.urls', namespace='news')),
-                       url(r'^apis/pictures/', include('Pictures.urls', namespace='pictures')),
-                       url(r'^apis/projects/', include('Projects.urls', namespace='projects')),
+                       url(r'^admin/', include(admin.site.urls)),
+                       url(r'^blog/', include('Blog.urls', namespace='blog')),
+                       url(r'^comments/', include('Comments.urls', namespace='comments')),
+                       url(r'^enrolled/', include('Enrolled.urls', namespace='enrolled')),
+                       url(r'^events/', include('Events.urls', namespace='events')),
+                       url(r'^feedback/', include('Feedback.urls', namespace='feedback')),
+                       url(r'^news/', include('News.urls', namespace='news')),
+                       url(r'^pictures/', include('Pictures.urls', namespace='pictures')),
+                       url(r'^projects/', include('Projects.urls', namespace='projects')),
                        )
 
 handler403 = views.permission_denied
