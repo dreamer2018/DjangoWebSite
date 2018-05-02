@@ -28,6 +28,15 @@ def upload(request):
         }
         js = json.dumps(rtu)
         return HttpResponse(js)  # 此处简单返回一个成功的消息，在实际应用中可以返回到指定的页面中
+    else:
+        # 请求方法错误
+        rtu = {
+            'code': 105,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
 
 
 def handle_upload_file(file_data, file_name):
