@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'Pictures',
     'Projects',
     'Users',
+    'FileUpLoad',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -85,10 +86,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'djangowebsite',
-        'USER': 'django',
-        'PASSWORD': 'django',
-        'HOST': '192.168.180.129',
-        'PORT': '3306',
+        'USER': 'dws',
+        'PASSWORD': 'dws',
+        'HOST': '182.254.245.216',
+        'PORT': '33060',
     }
 }
 

@@ -27,6 +27,7 @@ urlpatterns = patterns('',
                        url(r'^news/', include('News.urls', namespace='news')),
                        url(r'^pictures/', include('Pictures.urls', namespace='pictures')),
                        url(r'^projects/', include('Projects.urls', namespace='projects')),
+                       url(r'^upload/', include('FileUpLoad.urls', namespace='projects')),
                        )
 
 handler403 = views.permission_denied
