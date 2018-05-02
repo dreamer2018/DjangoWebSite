@@ -19,7 +19,7 @@ def upload(request):
 
 
 def handle_upload_file(file, filename):
-    path = './'  # 上传文件的保存路径，可以自己指定任意的路径
+    path = 'FileUpLoad/Data/'  # 上传文件的保存路径，可以自己指定任意的路径
     if not os.path.exists(path):
         os.makedirs(path)
     with open(path + filename, 'wb+') as destination:
