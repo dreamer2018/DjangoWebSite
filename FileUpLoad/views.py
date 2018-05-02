@@ -5,11 +5,13 @@
 """
 
 
-from django.shortcuts import HttpResponse, render_to_response
+from django.shortcuts import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 import os
 # Create your views here.
 
 
+@csrf_exempt
 def upload(request):
     if request.method == "POST":
         handle_upload_file(request.FILES['file'], str(request.FILES['file']))
