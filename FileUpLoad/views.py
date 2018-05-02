@@ -1,3 +1,10 @@
+#!/usr/env python
+# -*- coding: UTF-8 -*-
+"""
+    Created by ZhouPan at 2018/5/2.
+"""
+
+
 from django.shortcuts import HttpResponse, render_to_response
 import os
 # Create your views here.
