@@ -145,7 +145,7 @@ class Devuser(models.Model):
             return True, devuser
 
     @staticmethod
-    def get_devuser_by_pid(gid):
+    def get_devuser_by_gid(gid):
         devuser = Devuser.objects.filter(gid=gid)
         return True, devuser
 

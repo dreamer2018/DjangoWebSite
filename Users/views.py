@@ -963,7 +963,7 @@ def add_devgroup(request):
     if request.method == 'POST':
         try:
             name = request.POST['name']
-            describe = request.POST['describe']
+            describe = request.POST['desc']
         except Exception:
             rtu = {
                 'code': 104,
