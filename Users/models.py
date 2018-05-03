@@ -95,7 +95,7 @@ class Devgroup(models.Model):
             return True, devgroup
 
     @staticmethod
-    def get_projects_by_title(name, sign=0):
+    def get_devgroup_by_title(name, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
             devgroup = Devgroup.objects.filter(name__contains=name)
@@ -109,7 +109,7 @@ class Devgroup(models.Model):
         return True, devgroup
 
     @staticmethod
-    def delete_devuser_by_id(gid):
+    def delete_devgroup_by_id(gid):
         sta, devgroup = Devgroup.get_devgroup_by_id(gid=gid)
         if not sta:
             return False, devgroup
@@ -131,7 +131,7 @@ class Devuser(models.Model):
         devuser = Devuser()
         devuser.nickname = nickname
         devuser.email = email
-        devuser.pid = gid
+        devuser.gid = gid
         devuser.save()
         return True, devuser.id
 

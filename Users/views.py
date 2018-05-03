@@ -920,7 +920,7 @@ def get_devgroup_by_id(request):
 def get_devgroup_by_title(request, page, page_size):
     """/projects/{title}"""
     name = request.GET['name']
-    status, devgroup = Devgroup.get_projects_by_title(name=name)
+    status, devgroup = Devgroup.get_devgroup_by_title(name=name)
     if status:
         data = []
         page_data = pagination_tool(devgroup, req_page=page, page_size=page_size)
@@ -1012,7 +1012,7 @@ def delete_devgroup(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, devgroup = Devgroup.delete_devuser_by_id(gid=gid)
+            sta, devgroup = Devgroup.delete_devgroup_by_id(gid=gid)
             if sta:
                 rtu = {
                     'code': 100,
