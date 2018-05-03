@@ -841,15 +841,15 @@ def get_devgroup(request):
 # 获取所有开发者信息
 def get_all_devgroup(request, page, page_size):
     """/devuser"""
-    status, devuser = Devgroup.get_all_devgroup()
+    status, devgroup = Devgroup.get_all_devgroup()
     if status:
         data = []
-        page_data = pagination_tool(devuser, req_page=page, page_size=page_size)
-        devuser = page_data['data']
-        for item in devuser:
+        page_data = pagination_tool(devgroup, req_page=page, page_size=page_size)
+        devgroup = page_data['data']
+        for item in devgroup:
             dic = {
                 'gid': item.id,
-                'name': item.nickname,
+                'name': item.name,
                 'desc': item.email,
             }
             data.append(dic)
@@ -880,7 +880,7 @@ def get_devgroup_by_id(request):
     """/devuser/{id}"""
     try:
         str_id = request.GET['id']
-        uid = int(str_id)
+        gid = int(str_id)
     except Exception:
         rtu = {
             'code': 104,
@@ -890,12 +890,12 @@ def get_devgroup_by_id(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
     else:
-        status, devuser = Devuser.get_devuser_by_id(uid=uid)
+        status, devgroup = Devgroup.get_devgroup_by_id(gid=gid)
         if status:
             data = {
-                'gid': devuser.id,
-                'name': devuser.nickname,
-                'desc': devuser.email,
+                'gid': devgroup.id,
+                'name': devgroup.name,
+                'desc': devgroup.email,
             }
             rtu = {
                 'code': 100,

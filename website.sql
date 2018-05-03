@@ -446,10 +446,10 @@ INSERT INTO Users_anonymous values (1, 'zp', 'sss@mail.com');
 INSERT INTO Users_anonymous values (2, 'lz', 'sbb@mail.com');
 INSERT INTO Users_anonymous values (3, 'whs', 'sccs@mail.com');
 /* Devuser */
-INSERT INTO  Users_devuser  values (1, 1, 1);
-INSERT INTO  Users_devuser  values (2, 2, 1);
-INSERT INTO  Users_devuser  values (3, 3, 1);
-INSERT INTO  Users_devuser  values (4, 2, 2);
+INSERT INTO  Users_devuser  values (1, 1, "hehe", "aaa@sss.com");
+INSERT INTO  Users_devuser  values (2, 1, "hehe", "aaa@sss.com");
+INSERT INTO  Users_devuser  values (3, 1, "hehe", "aaa@sss.com");
+INSERT INTO  Users_devuser  values (4, 2, "hehe", "aaa@sss.com");
 
 /**Devgroup */
 
