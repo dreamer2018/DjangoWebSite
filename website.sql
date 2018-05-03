@@ -34,29 +34,7 @@ DROP TABLE IF EXISTS blog;
 
 
 
-/*==============================================================*/
-/* Table: anonymous      匿名用户                               */
-/*==============================================================*/
-CREATE TABLE anonymous
-(
-  aid      INT PRIMARY KEY AUTO_INCREMENT, # ID
-  nickname VARCHAR(20), # 昵称
-  email    VARCHAR(255) UNIQUE NOT NULL # 邮件
-);
 
-/*
-{
-"status":true,
-"message":"error',
-"data":
-[{
-"aid":1,
-"nickname":"xiaoming",
-"eamil":"A@qq.com"
-}],
-"all_count":1
-}
-*/
 
 /*==============================================================*/
 /* Table: events                       活动/沙龙                */
@@ -373,8 +351,45 @@ CREATE TABLE devuser  #
 (
   did INT PRIMARY KEY AUTO_INCREMENT, #ID
   uid INT NOT NULL, # 用户ID
-  pid INT NOT NULL   # 项目ID
+  gid INT NOT NULL   # 项目ID
 );
+
+/*==============================================================*/
+/* Table: devuser         项目对应的开发组                     */
+/*==============================================================*/
+
+CREATE TABLE devgroup (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  name varchar(64) NOT NULL,
+  desc varchar(256) NOT NULL,
+  PRIMARY KEY (`id`)
+)
+
+
+/*==============================================================*/
+/* Table: anonymous      匿名用户                               */
+/*==============================================================*/
+CREATE TABLE anonymous
+(
+  aid      INT PRIMARY KEY AUTO_INCREMENT, # ID
+  nickname VARCHAR(20), # 昵称
+  email    VARCHAR(255) UNIQUE NOT NULL # 邮件
+);
+
+/*
+{
+"status":true,
+"message":"error',
+"data":
+[{
+"aid":1,
+"nickname":"xiaoming",
+"eamil":"A@qq.com"
+}],
+"all_count":1
+}
+*/
+
 
 /*
 {
@@ -423,8 +438,25 @@ INSERT INTO Pictures_pictures values (1, "小组合照", "https://www.baidu.com/
 INSERT INTO Pictures_pictures values (2, "小组合照", "https://www.baidu.com/img/bd_logo1.png",  "2018-03-04", "06:00:00", 0, 0);
 INSERT INTO Pictures_pictures values (3, "小组合照", "https://www.baidu.com/img/bd_logo1.png",  "2018-03-04", "06:00:00", 0, 0);
 /* Projects */
-INSERT INTO Projects_projects values (1, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00", 0, 0, 0);
-INSERT INTO Projects_projects values (2, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00", 0, 0, 0);
-INSERT INTO Projects_projects values (3, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00", 0, 0, 0);
+INSERT INTO Projects_projects values (1, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00",0, 0, 0, 0);
+INSERT INTO Projects_projects values (2, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00",0, 0, 0, 0);
+INSERT INTO Projects_projects values (3, "小组纳新啦", "今天小组纳新开始啦", "今天小组纳新开始啦,大家快来关注呀", "https://www.baidu.com/img/bd_logo1.png", "https://github.com/dreamer2018/DjangoWebSite", "2018-03-04", "06:00:00",0, 0, 0, 0);
+/* Anonymous */
+INSERT INTO Users_anonymous values (1, 'zp', 'sss@mail.com');
+INSERT INTO Users_anonymous values (2, 'lz', 'sbb@mail.com');
+INSERT INTO Users_anonymous values (3, 'whs', 'sccs@mail.com');
+/* Devuser */
+INSERT INTO  Users_devuser  values (1, 1, 1);
+INSERT INTO  Users_devuser  values (2, 2, 1);
+INSERT INTO  Users_devuser  values (3, 3, 1);
+INSERT INTO  Users_devuser  values (4, 2, 2);
+
+/**Devgroup */
+
+INSERT INTO Users_devgroup values (1, "1开发组", "第一开发组");
+INSERT INTO Users_devgroup values (2, "2开发组", "第二开发组");
+INSERT INTO Users_devgroup values (3, "3开发组", "第三开发组");
+
+
 
 
