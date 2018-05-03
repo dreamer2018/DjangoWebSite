@@ -6,7 +6,7 @@
 
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
-from models import Anonymous, Devuser
+from models import Anonymous, Devuser, Devgroup
 import json
 from django.views.decorators.csrf import csrf_exempt
 from OAuth_Django_SDK import combine_url, GET_USER_INFO_URL
@@ -359,9 +359,10 @@ def get_all_devuser(request, page, page_size):
         devuser = page_data['data']
         for item in devuser:
             dic = {
-                'did': item.id,
-                'uid': item.uid,
-                'pid': item.pid
+                'uid': item.id,
+                'nickname': item.nickname,
+                'email': item.email,
+                'gid': item.gid
             }
             data.append(dic)
         rtu = {
@@ -404,9 +405,10 @@ def get_devuser_by_id(request):
         status, devuser = Devuser.get_devuser_by_id(uid=uid)
         if status:
             data = {
-                'did': devuser.id,
-                'uid': devuser.uid,
-                'pid': devuser.pid
+                'uid': devuser.id,
+                'nickname': devuser.nickname,
+                'email': devuser.email,
+                'gid': devuser.gid
             }
             rtu = {
                 'code': 100,
@@ -425,13 +427,13 @@ def get_devuser_by_id(request):
         return HttpResponse(js)
 
 
-# 通过obj获取开发者信息
-def get_devuser_by_pid(request, page, page_size):
+# 通过gid获取开发者信息
+def get_devuser_by_gid(request, page, page_size):
     """/devuser/{obj}"""
     try:
-        str_pid = request.GET['pid']
-        pid = int(str_pid)
-        status, devuser = Devuser.get_devuser_by_pid(pid=pid)
+        str_gid = request.GET['gid']
+        gid = int(str_gid)
+        status, devuser = Devuser.get_devuser_by_pid(gid=gid)
     except Exception:
         rtu = {
             'code': 104,
@@ -447,9 +449,10 @@ def get_devuser_by_pid(request, page, page_size):
             devuser = page_data['data']
             for item in devuser:
                 dic = {
-                    'did': item.id,
-                    'uid': item.uid,
-                    'pid': item.pid
+                    'uid': item.id,
+                    'nickname': item.nickname,
+                    'email': item.email,
+                    'gid': item.gid
                 }
                 data.append(dic)
             rtu = {
@@ -481,8 +484,9 @@ def add_devuser(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
-            uid = int(request.POST['uid'])
-            pid = int(request.POST['pid'])
+            nickname = request.POST['nickname']
+            email = request.POST['email']
+            gid = int(request.POST['gid'])
         except Exception:
             rtu = {
                 'code': 104,
@@ -492,7 +496,7 @@ def add_devuser(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, uid = Devuser.insert(uid=uid, pid=pid)
+            sta, uid = Devuser.insert(nickname=nickname, email=email, gid=gid)
             rtu = {
                 'code': 100,
                 'status': sta,
@@ -521,7 +525,7 @@ def delete_devuser(request):
     #     return HttpResponseRedirect('/login/?next=' + request.path)
     if request.method == 'POST':
         try:
-            did = int(request.POST['did'])
+            uid = int(request.POST['uid'])
         except Exception:
             rtu = {
                 'code': 104,
@@ -531,14 +535,14 @@ def delete_devuser(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, devuser = Devuser.delete_devuser_by_id(uid=did)
+            sta, devuser = Devuser.delete_devuser_by_id(uid=uid)
             if sta:
                 rtu = {
                     'code': 100,
                     'status': sta,
                     'message': devuser,
                     'data': {
-                        'id': did
+                        'id': uid
                     }
                 }
                 js = json.dumps(rtu)
@@ -727,6 +731,7 @@ def is_login(request):
     else:
         return False, 'not login!'
 
+
 # 403
 def permission_denied(request):
     rtu = {
@@ -777,3 +782,261 @@ def pagination_tool(data, req_page, page_size):
         'data': req.object_list  # 请求数据
     }
     return rtu
+
+
+# 获取开发者信息
+def get_devgroup(request):
+    """/devuser/"""
+    if request.method == 'GET':
+        arg_count = 0
+        req_page = REQ_PAGE
+        page_size = PAGE_SIZE
+
+        try:
+            if 'page' in request.GET.keys():
+                req_page = int(request.GET['page'])
+                arg_count += 1
+            if 'page_size' in request.GET.keys():
+                page_size = int(request.GET['page_size'])
+                arg_count += 1
+        except Exception:
+            # 参数错误
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid arguments!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        if len(request.GET) - arg_count == 0:
+            return get_all_devgroup(request, req_page, page_size)
+        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            if 'id' in request.GET.keys():
+                return get_devgroup_by_id(request)
+            else:
+                rtu = {
+                    'code': 104,
+                    'status': False,
+                    'message': 'invalid argument',
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    rtu = {
+        'code': 105,
+        'status': False,
+        'message': 'method error!',
+    }
+    js = json.dumps(rtu)
+    return HttpResponse(js)
+
+
+# 获取所有开发者信息
+def get_all_devgroup(request, page, page_size):
+    """/devuser"""
+    status, devuser = Devgroup.get_all_devgroup()
+    if status:
+        data = []
+        page_data = pagination_tool(devuser, req_page=page, page_size=page_size)
+        devuser = page_data['data']
+        for item in devuser:
+            dic = {
+                'gid': item.id,
+                'name': item.nickname,
+                'desc': item.email,
+            }
+            data.append(dic)
+        rtu = {
+            'code': 100,
+            'status': True,
+            'message': 'success',
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 106,
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 通过id获取开发者信息
+def get_devgroup_by_id(request):
+    """/devuser/{id}"""
+    try:
+        str_id = request.GET['id']
+        uid = int(str_id)
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument!'
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        status, devuser = Devuser.get_devuser_by_id(uid=uid)
+        if status:
+            data = {
+                'gid': devuser.id,
+                'name': devuser.nickname,
+                'desc': devuser.email,
+            }
+            rtu = {
+                'code': 100,
+                'status': True,
+                'message': 'success',
+                'data': data
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        rtu = {
+            'code': 106,
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 增加新的开发者信息
+@csrf_exempt
+def add_devgroup(request):
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            name = request.POST['name']
+            describe = request.POST['describe']
+        except Exception:
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument!',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, gid = Devgroup.insert(name=name, desc=describe)
+            rtu = {
+                'code': 100,
+                'status': sta,
+                'message': 'success',
+                'data': {
+                    'id': gid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 105,
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 删除开发者
+@csrf_exempt
+def delete_devgroup(request):
+    """/devuser/delete/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            gid = int(request.POST['gid'])
+        except Exception:
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, devgroup = Devgroup.delete_devuser_by_id(gid=gid)
+            if sta:
+                rtu = {
+                    'code': 100,
+                    'status': sta,
+                    'message': devgroup,
+                    'data': {
+                        'id': gid
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'code': 106,
+                    'status': sta,
+                    'message': devgroup
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 105,
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
+# 更改项目内容
+@csrf_exempt
+def alter_devgroup(request):
+    """/projects/alter/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            gid = int(request.POST['gid'])
+            name = request.POST['name']
+            describe = request.POST['describe']
+        except Exception:
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, message = Devgroup.update(gid=gid, name=name, desc=describe)
+            rtu = {
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'id': gid
+                }
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 105,
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)

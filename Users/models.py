@@ -69,20 +69,60 @@ class Devgroup(models.Model):
     name = models.CharField(max_length=64)
     desc = models.CharField(max_length=256)
 
+    @staticmethod
+    def insert(name, desc):
+        devgroup = Devuser()
+        devgroup.name = name
+        devgroup.desc = desc
+        devgroup.save()
+        return True, devgroup.id
+
+    @staticmethod
+    def update(gid, name, desc):
+        devgroup = Devgroup.get_devgroup_by_id(gid=gid)
+        devgroup.name = name
+        devgroup.desc = desc
+        devgroup.save()
+        return True, devgroup.id
+
+    @staticmethod
+    def get_devgroup_by_id(gid):
+        try:
+            devgroup = Devgroup.objects.get(id=gid)
+        except Devgroup.DoesNotExist:
+            return False, "Not Found!"
+        else:
+            return True, devgroup
+
+    @staticmethod
+    def get_all_devgroup():
+        devgroup = Devgroup.objects.all()
+        return True, devgroup
+
+    @staticmethod
+    def delete_devuser_by_id(gid):
+        sta, devgroup = Devgroup.get_devgroup_by_id(gid=gid)
+        if not sta:
+            return False, devgroup
+        devgroup.delete()
+        return True, "delete success"
+
 
 # 开发者用户
 class Devuser(models.Model):
-    uid = models.IntegerField()
+    nickname = models.CharField(max_length=20)  # 昵称
+    email = models.CharField(max_length=255)  # 邮件
     gid = models.IntegerField()
 
     def __unicode__(self):
         return self.id
 
     @staticmethod
-    def insert(uid, pid):
+    def insert(nickname, email, gid):
         devuser = Devuser()
-        devuser.uid = uid
-        devuser.pid = pid
+        devuser.nickname = nickname
+        devuser.email = email
+        devuser.pid = gid
         devuser.save()
         return True, devuser.id
 
@@ -96,8 +136,8 @@ class Devuser(models.Model):
             return True, devuser
 
     @staticmethod
-    def get_devuser_by_pid(pid):
-        devuser = Devuser.objects.filter(pid=pid)
+    def get_devuser_by_pid(gid):
+        devuser = Devuser.objects.filter(gid=gid)
         return True, devuser
 
     @staticmethod

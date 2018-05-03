@@ -27,7 +27,7 @@ class Projects(models.Model):
         return self.title
 
     @staticmethod
-    def insert(title, content, origin, link, date, time, poster=None):
+    def insert(title, content, origin, link, date, time, author, poster=None):
         project = Projects()
         project.title = title
         project.content = content
@@ -35,6 +35,7 @@ class Projects(models.Model):
         project.link = link
         project.date = date
         project.time = time
+        project.author = author
         if poster is not None:
             project.poster = poster
         project.save()
@@ -69,9 +70,8 @@ class Projects(models.Model):
         return True, project
 
     @staticmethod
-    def update(pid, title=None, content=None, origin=None, poster=None, link=None, date=None, time=None, reader=None,
-               upvote=None,
-               status=None):
+    def update(pid, title=None, content=None, origin=None, poster=None, link=None, date=None, time=None, author=None,
+               reader=None, upvote=None, status=None):
         sta, project = Projects.get_project_by_id(pid)
         if not sta:
             return sta, project
@@ -89,6 +89,8 @@ class Projects(models.Model):
             project.date = date
         if time is not None:
             project.time = time
+        if author is not None:
+            project.author = author
         if reader is not None:
             project.reader = reader
         if upvote is not None:

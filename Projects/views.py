@@ -96,6 +96,7 @@ def get_all_projects(request, page, page_size):
                 'link': item.link,
                 'date': item.date.strftime('%Y-%m-%d'),
                 'time': item.time.strftime('%H:%M:%S'),
+                'author': item.author,
                 'reader': item.reader,
                 'upvote': item.upvote,
                 'status': item.status
@@ -149,6 +150,7 @@ def get_projects_by_id(request):
                 'link': projects.link,
                 'date': projects.date.strftime('%Y-%m-%d'),
                 'time': projects.time.strftime('%H:%M:%S'),
+                'author': projects.author,
                 'reader': projects.reader,
                 'upvote': projects.upvote,
                 'status': projects.status
@@ -189,6 +191,7 @@ def get_projects_by_title(request, page, page_size):
                 'link': item.link,
                 'date': item.date.strftime('%Y-%m-%d'),
                 'time': item.time.strftime('%H:%M:%S'),
+                'author': item.author,
                 'reader': item.reader,
                 'upvote': item.upvote,
                 'status': item.status
@@ -251,6 +254,7 @@ def get_projects_by_status(request, page, page_size):
                     'link': item.link,
                     'date': item.date.strftime('%Y-%m-%d'),
                     'time': item.time.strftime('%H:%M:%S'),
+                    'author': item.author,
                     'reader': item.reader,
                     'upvote': item.upvote,
                     'status': item.status
@@ -283,6 +287,7 @@ def add_projects(request):
             link = request.POST['link']
             date = request.POST['date']
             time = request.POST['time']
+            author = request.POST['author']
             poster = None
             if 'poster' in request.POST.keys():
                 poster = request.POST['poster']
@@ -297,10 +302,10 @@ def add_projects(request):
         else:
             if poster is not None:
                 sta, pid = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
-                                           time=time, poster=poster)
+                                           time=time, author=author, poster=poster)
             else:
                 sta, pid = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
-                                           time=time)
+                                           time=time, author=author)
             rtu = {
                 'code': 100,
                 'status': sta,
@@ -337,6 +342,7 @@ def alter_projects(request):
             link = request.POST['link']
             date = request.POST['date']
             time = request.POST['time']
+            author = request.POST['author']
             poster = None
             if 'poster' in request.POST.keys():
                 poster = request.POST['poster']
@@ -351,10 +357,10 @@ def alter_projects(request):
         else:
             if poster is not None:
                 sta, message = Projects.update(pid=pid, title=title, content=content, origin=origin, link=link,
-                                               date=date, time=time, poster=poster)
+                                               date=date, time=time, poster=poster, author=author)
             else:
                 sta, message = Projects.update(pid=pid, title=title, content=content, origin=origin, link=link,
-                                               date=date, time=time)
+                                               date=date, time=time, author=author)
             rtu = {
                 'code': 100,
                 'status': sta,
