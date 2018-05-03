@@ -433,7 +433,7 @@ def get_devuser_by_gid(request, page, page_size):
     try:
         str_gid = request.GET['gid']
         gid = int(str_gid)
-        status, devuser = Devuser.get_devuser_by_pid(gid=gid)
+        status, devuser = Devuser.get_devuser_by_gid(gid=gid)
     except Exception:
         rtu = {
             'code': 104,
