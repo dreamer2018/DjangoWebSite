@@ -850,7 +850,7 @@ def get_all_devgroup(request, page, page_size):
             dic = {
                 'gid': item.id,
                 'name': item.name,
-                'desc': item.email,
+                'desc': item.desc,
             }
             data.append(dic)
         rtu = {
@@ -895,7 +895,7 @@ def get_devgroup_by_id(request):
             data = {
                 'gid': devgroup.id,
                 'name': devgroup.name,
-                'desc': devgroup.email,
+                'desc': devgroup.desc,
             }
             rtu = {
                 'code': 100,
