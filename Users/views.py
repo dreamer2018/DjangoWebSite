@@ -821,6 +821,8 @@ def get_devgroup(request):
         else:
             if 'id' in request.GET.keys():
                 return get_devgroup_by_id(request)
+            if 'name' in request.GET.keys():
+                return get_devgroup_by_title(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
@@ -915,7 +917,7 @@ def get_devgroup_by_id(request):
 
 
 # 通过title获取项目内容
-def get_projects_by_title(request, page, page_size):
+def get_devgroup_by_title(request, page, page_size):
     """/projects/{title}"""
     name = request.GET['name']
     status, devgroup = Devgroup.get_projects_by_title(name=name)
