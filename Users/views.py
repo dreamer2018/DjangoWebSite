@@ -1052,7 +1052,7 @@ def alter_devgroup(request):
         try:
             gid = int(request.POST['gid'])
             name = request.POST['name']
-            describe = request.POST['describe']
+            describe = request.POST['desc']
         except Exception:
             rtu = {
                 'code': 104,
