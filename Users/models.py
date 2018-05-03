@@ -71,7 +71,7 @@ class Devgroup(models.Model):
 
     @staticmethod
     def insert(name, desc):
-        devgroup = Devuser()
+        devgroup = Devgroup()
         devgroup.name = name
         devgroup.desc = desc
         devgroup.save()
