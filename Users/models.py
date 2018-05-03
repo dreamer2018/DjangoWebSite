@@ -79,7 +79,9 @@ class Devgroup(models.Model):
 
     @staticmethod
     def update(gid, name, desc):
-        devgroup = Devgroup.get_devgroup_by_id(gid=gid)
+        sta, devgroup = Devgroup.get_devgroup_by_id(gid=gid)
+        if not sta:
+            return sta, devgroup
         devgroup.name = name
         devgroup.desc = desc
         devgroup.save()
