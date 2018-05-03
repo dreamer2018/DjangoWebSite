@@ -330,8 +330,8 @@ def get_devuser(request):
         else:
             if 'id' in request.GET.keys():
                 return get_devuser_by_id(request)
-            elif 'pid' in request.GET.keys():
-                return get_devuser_by_pid(request, req_page, page_size)
+            elif 'gid' in request.GET.keys():
+                return get_devuser_by_gid(request, req_page, page_size)
             else:
                 rtu = {
                     'code': 104,
