@@ -18,6 +18,7 @@ class Projects(models.Model):
     link = models.CharField(max_length=255)  # 项目链接
     date = models.DateField()  # 日期
     time = models.TimeField()  # 时间
+    author = models.IntegerField()  # 作者
     reader = models.IntegerField(default=0)  # 阅读量
     upvote = models.IntegerField(default=0)  # 点赞量
     status = models.IntegerField(default=0)  # 项目状态

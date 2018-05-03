@@ -65,10 +65,15 @@ class Anonymous(models.Model):
         return True, "delete success"
 
 
+class Devgroup(models.Model):
+    name = models.CharField(max_length=64)
+    desc = models.CharField(max_length=256)
+
+
 # 开发者用户
 class Devuser(models.Model):
     uid = models.IntegerField()
-    pid = models.IntegerField()
+    gid = models.IntegerField()
 
     def __unicode__(self):
         return self.id
