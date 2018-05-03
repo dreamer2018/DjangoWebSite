@@ -95,6 +95,15 @@ class Devgroup(models.Model):
             return True, devgroup
 
     @staticmethod
+    def get_projects_by_title(name, sign=0):
+        # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
+        if sign == 0:
+            devgroup = Devgroup.objects.filter(name__contains=name)
+        else:
+            devgroup = Devgroup.objects.filter(name=name)
+        return True, devgroup
+
+    @staticmethod
     def get_all_devgroup():
         devgroup = Devgroup.objects.all()
         return True, devgroup

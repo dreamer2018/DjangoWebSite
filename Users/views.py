@@ -914,6 +914,45 @@ def get_devgroup_by_id(request):
         return HttpResponse(js)
 
 
+# 通过title获取项目内容
+def get_projects_by_title(request, page, page_size):
+    """/projects/{title}"""
+    name = request.GET['name']
+    status, devgroup = Devgroup.get_projects_by_title(name=name)
+    if status:
+        data = []
+        page_data = pagination_tool(devgroup, req_page=page, page_size=page_size)
+        devgroup = page_data['data']
+        for item in devgroup:
+            dic = {
+                'gid': item.id,
+                'name': item.name,
+                'desc': item.desc,
+            }
+            data.append(dic)
+        rtu = {
+            'code': 100,
+            'status': True,
+            'message': 'success',
+            'all_count': page_data['all_count'],
+            'page_size': page_data['page_size'],
+            'page_count': page_data['page_count'],
+            'curr_page': page_data['req_page'],
+            'data': data
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+
+        rtu = {
+            'code': 106,
+            'status': False,
+            'message': 'not found!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
+
 # 增加新的开发者信息
 @csrf_exempt
 def add_devgroup(request):
