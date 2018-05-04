@@ -216,6 +216,7 @@ CREATE TEMPORARY TABLE projects
   link    VARBINARY(255) NOT NULL, # 项目链接
   date    DATE           NOT NULL, # 日期
   time    TIME           NOT NULL, # 时间
+  author  INT            NOT NULL , # 项目开发者
   reader  INT             DEFAULT 0, # 阅读量
   upvote  INT             DEFAULT 0, # 点赞量
   status  INT(1)          DEFAULT 0 # 项目状态
@@ -349,9 +350,9 @@ all_count:1
 
 CREATE TABLE devuser  #
 (
-  did INT PRIMARY KEY AUTO_INCREMENT, #ID
-  uid INT NOT NULL, # 用户ID
-  gid INT NOT NULL   # 项目ID
+  uid INT PRIMARY KEY AUTO_INCREMENT, #ID
+  nickname INT NOT NULL, # 用户昵称
+  email INT NOT NULL   # 用户邮箱
 );
 
 /*==============================================================*/
@@ -359,10 +360,9 @@ CREATE TABLE devuser  #
 /*==============================================================*/
 
 CREATE TABLE devgroup (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  name varchar(64) NOT NULL,
-  desc varchar(256) NOT NULL,
-  PRIMARY KEY (`id`)
+  gid INT  PRIMARY KEY AUTO_INCREMENT,  # ID
+  name varchar(64) NOT NULL,  # 组名称
+  desc varchar(256) NOT NULL, # 组描述
 )
 
 
