@@ -11,4 +11,5 @@ urlpatterns = patterns('',
                        url(r'^add/$', views.add_enrolled),
                        url(r'^alter/$', views.alter_enrolled),
                        url(r'^delete/$', views.delete_enrolled),
+                       url(r'^status/$', views.alter_enrolled_status),
                        )

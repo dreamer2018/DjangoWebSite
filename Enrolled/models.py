@@ -57,7 +57,7 @@ class Enrolled(models.Model):
         return True, enrolled
 
     @staticmethod
-    def update(eid, obj, uid, date, time, status=None):
+    def update(eid=None, obj=None, uid=None, date=None, time=None, status=None):
         sta, enrolled = Enrolled.get_enrolled_by_id(eid)
         if not sta:
             return sta, enrolled

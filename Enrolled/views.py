@@ -362,6 +362,59 @@ def alter_enrolled(request):
         return HttpResponse(js)
 
 
+# 更改活动状态
+@csrf_exempt
+def alter_enrolled_status(request):
+    """/events/status/"""
+    # if not is_login(request)[0]:
+    #     return HttpResponseRedirect('/login/?next=' + request.path)
+    if request.method == 'POST':
+        try:
+            eid = int(request.POST['eid'])
+        except Exception:
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+        else:
+            sta, enrolled = Enrolled.get_enrolled_by_id(eid=eid)
+            if sta:
+                if enrolled.status == 0:
+                    enrolled.status = 1
+                    sta, message = Enrolled.update(eid=eid, status=1)
+                else:
+                    enrolled.status = 0
+                    sta, message = Enrolled.update(eid=eid, status=0)
+                rtu = {
+                    'code': 100,
+                    'status': sta,
+                    'message': message,
+                    'data': {
+                        'status': enrolled.status
+                    }
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+            else:
+                rtu = {
+                    'code': 106,
+                    'status': sta,
+                    'message': enrolled
+                }
+                js = json.dumps(rtu)
+                return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 105,
+            'status': False,
+            'message': 'method error!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
 # 删除报名信息
 @csrf_exempt
 def delete_enrolled(request):
