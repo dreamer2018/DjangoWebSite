@@ -18,16 +18,7 @@ from django.contrib import admin
 from Users import views
 from django.conf.urls.static import static
 from django.conf import settings
-from apscheduler.scheduler import Scheduler
 
-sched = Scheduler()
-
-
-@sched.interval_schedule(seconds=1)
-def mytask():
-    print('Hello world!')
-
-sched.start()
 
 urlpatterns = patterns('',
                        url(r'^', include("Users.urls", namespace="user")),
