@@ -452,7 +452,7 @@ def get_blog_from_api():
             blog = {
                 'title': title,
                 'author': author,
-                'date': date.decode('ascii'),
+                'date': "20%s" % date.decode('ascii'),
                 'time': time.decode('ascii'),
                 'summary': summary,
                 'url': url
