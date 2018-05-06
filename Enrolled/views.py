@@ -415,6 +415,7 @@ def alter_enrolled_status(request):
         js = json.dumps(rtu)
         return HttpResponse(js)
 
+
 # 删除报名信息
 @csrf_exempt
 def delete_enrolled(request):
