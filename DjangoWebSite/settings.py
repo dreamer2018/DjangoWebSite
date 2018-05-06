@@ -120,9 +120,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\', '/')
 sched = Scheduler()
 
 
-@sched.interval_schedule(seconds=1)
+@sched.interval_schedule(seconds=3600)
 def mytask():
     save_blog_from_api()
     print "update blog"
+
 
 sched.start()
