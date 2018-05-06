@@ -44,21 +44,21 @@ class Pictures(models.Model):
 
     @staticmethod
     def get_all_pictures():
-        pictures = Pictures.objects.all()
+        pictures = Pictures.objects.all().order_by('-id')
         return True, pictures
 
     @staticmethod
     def get_pictures_by_content(content, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            pictures = Pictures.objects.filter(content__contains=content)
+            pictures = Pictures.objects.filter(content__contains=content).order_by('-id')
         else:
-            pictures = Pictures.objects.filter(content=content)
+            pictures = Pictures.objects.filter(content=content).order_by('-id')
         return True, pictures
 
     @staticmethod
     def get_pictures_by_status(status):
-        pictures = Pictures.objects.filter(status=status)
+        pictures = Pictures.objects.filter(status=status).order_by('-id')
         return True, pictures
 
     @staticmethod

@@ -43,17 +43,17 @@ class Enrolled(models.Model):
 
     @staticmethod
     def get_all_enrolled():
-        enrolled = Enrolled.objects.all()
+        enrolled = Enrolled.objects.all().order_by('-id')
         return True, enrolled
 
     @staticmethod
     def get_enrolled_by_obj(obj):
-        enrolleds = Enrolled.objects.filter(obj=obj)
+        enrolleds = Enrolled.objects.filter(obj=obj).order_by('-id')
         return True, enrolleds
 
     @staticmethod
     def get_enrolled_by_status(status):
-        enrolled = Enrolled.objects.filter(status=status)
+        enrolled = Enrolled.objects.filter(status=status).order_by('-id')
         return True, enrolled
 
     @staticmethod

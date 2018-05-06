@@ -47,7 +47,7 @@ class News(models.Model):
 
     @staticmethod
     def get_all_news():
-        return True, News.objects.all()
+        return True, News.objects.all().order_by('-id')
 
     @staticmethod
     def get_news_by_id(nid):
@@ -62,14 +62,14 @@ class News(models.Model):
     def get_news_by_title(title, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            news = News.objects.filter(title__contains=title)
+            news = News.objects.filter(title__contains=title).order_by('-id')
         else:
-            news = News.objects.filter(title=title)
+            news = News.objects.filter(title=title).order_by('-id')
         return True, news
 
     @staticmethod
     def get_news_by_status(status):
-        news = News.objects.filter(status=status)
+        news = News.objects.filter(status=status).order_by('-id')
         return True, news
 
     @staticmethod

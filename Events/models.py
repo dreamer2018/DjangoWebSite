@@ -53,7 +53,7 @@ class Events(models.Model):
 
     @staticmethod
     def get_all_events():
-        return True, Events.objects.all()
+        return True, Events.objects.all().order_by('-id')
 
     @staticmethod
     def get_events_by_id(eid):
@@ -68,14 +68,14 @@ class Events(models.Model):
     def get_events_by_title(title, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            events = Events.objects.filter(title__contains=title)
+            events = Events.objects.filter(title__contains=title).order_by('-id')
         else:
-            events = Events.objects.filter(title=title)
+            events = Events.objects.filter(title=title).order_by('-id')
         return True, events
 
     @staticmethod
     def get_events_by_status(status):
-        events = Events.objects.filter(status=status)
+        events = Events.objects.filter(status=status).order_by('-id')
         return True, events
 
     @staticmethod

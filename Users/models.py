@@ -36,12 +36,12 @@ class Anonymous(models.Model):
 
     @staticmethod
     def get_all_anonymous():
-        anonymous = Anonymous.objects.all()
+        anonymous = Anonymous.objects.all().order_by('-id')
         return True, anonymous
 
     @staticmethod
     def get_anonymous_by_email(email):
-        anonymous = Anonymous.objects.filter(email__contains=email)
+        anonymous = Anonymous.objects.filter(email__contains=email).order_by('-id')
         return True, anonymous
 
     @staticmethod
@@ -100,14 +100,14 @@ class Devgroup(models.Model):
     def get_devgroup_by_title(name, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            devgroup = Devgroup.objects.filter(name__contains=name)
+            devgroup = Devgroup.objects.filter(name__contains=name).order_by('-id')
         else:
-            devgroup = Devgroup.objects.filter(name=name)
+            devgroup = Devgroup.objects.filter(name=name).order_by('-id')
         return True, devgroup
 
     @staticmethod
     def get_all_devgroup():
-        devgroup = Devgroup.objects.all()
+        devgroup = Devgroup.objects.all().order_by('-id')
         return True, devgroup
 
     @staticmethod
@@ -148,12 +148,12 @@ class Devuser(models.Model):
 
     @staticmethod
     def get_devuser_by_gid(gid):
-        devuser = Devuser.objects.filter(gid=gid)
+        devuser = Devuser.objects.filter(gid=gid).order_by('-id')
         return True, devuser
 
     @staticmethod
     def get_all_devuser():
-        devuser = Devuser.objects.all()
+        devuser = Devuser.objects.all().order_by('-id')
         return True, devuser
 
     @staticmethod

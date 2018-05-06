@@ -43,21 +43,21 @@ class Feedback(models.Model):
 
     @staticmethod
     def get_all_feedback():
-        feedback = Feedback.objects.all()
+        feedback = Feedback.objects.all().order_by('-id')
         return True, feedback
 
     @staticmethod
     def get_feedback_by_content(content, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            feedback = Feedback.objects.filter(content__contains=content)
+            feedback = Feedback.objects.filter(content__contains=content).order_by('-id')
         else:
-            feedback = Feedback.objects.filter(content=content)
+            feedback = Feedback.objects.filter(content=content).order_by('-id')
         return True, feedback
 
     @staticmethod
     def get_feedback_by_status(status):
-        feedback = Feedback.objects.filter(status=status)
+        feedback = Feedback.objects.filter(status=status).order_by('-id')
         return True, feedback
 
     @staticmethod

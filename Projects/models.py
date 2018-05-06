@@ -43,7 +43,7 @@ class Projects(models.Model):
 
     @staticmethod
     def get_all_projects():
-        projects = Projects.objects.all()
+        projects = Projects.objects.all().order_by('-id')
         return True, projects
 
     @staticmethod
@@ -59,14 +59,14 @@ class Projects(models.Model):
     def get_projects_by_title(title, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            projects = Projects.objects.filter(title__contains=title)
+            projects = Projects.objects.filter(title__contains=title).order_by('-id')
         else:
-            projects = Projects.objects.filter(title=title)
+            projects = Projects.objects.filter(title=title).order_by('-id')
         return True, projects
 
     @staticmethod
     def get_projects_by_status(status):
-        project = Projects.objects.filter(status=status)
+        project = Projects.objects.filter(status=status).order_by('-id')
         return True, project
 
     @staticmethod

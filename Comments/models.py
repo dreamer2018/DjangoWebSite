@@ -47,28 +47,28 @@ class Comments(models.Model):
 
     @staticmethod
     def get_all_comments():
-        comments = Comments.objects.all()
+        comments = Comments.objects.all().order_by('-id')
         return True, comments
 
     @staticmethod
     def get_comments_by_user(user):
-        comments = Comments.objects.filter(user=user)
+        comments = Comments.objects.filter(user=user).order_by('-id')
         return True, comments
 
     @staticmethod
     def get_comments_by_type(o_type):
-        comments = Comments.objects.filter(o_type=o_type)
+        comments = Comments.objects.filter(o_type=o_type).order_by('-id')
         return True, comments
 
     @staticmethod
     def get_comments_by_obj(obj):
-        comments = Comments.objects.filter(obj=obj)
+        comments = Comments.objects.filter(obj=obj).order_by('-id')
         return True, comments
 
     @staticmethod
     def get_comments_by_type_obj_status(typ, obj, status):
         # type: (object, object, object) -> object
-        comment = Comments.objects.filter(o_type=typ, obj=obj, status=status)
+        comment = Comments.objects.filter(o_type=typ, obj=obj, status=status).order_by('-id')
         return True, comment
 
     @staticmethod
