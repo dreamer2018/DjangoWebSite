@@ -39,7 +39,7 @@ class Blog(models.Model):
 
     @staticmethod
     def get_all_blogs():
-        return True, Blog.objects.all()
+        return True, Blog.objects.all().order_by('-id')
 
     @staticmethod
     def get_blog_by_id(bid):
@@ -54,14 +54,14 @@ class Blog(models.Model):
     def get_blog_by_title(title, sign=0):
         # sign 精确查询与模糊查询选项 0 为模糊查询(默认) 非0 为精确查询
         if sign == 0:
-            blog = Blog.objects.filter(title__contains=title)
+            blog = Blog.objects.filter(title__contains=title).order_by('-id')
         else:
-            blog = Blog.objects.filter(title=title)
+            blog = Blog.objects.filter(title=title).order_by('-id')
         return True, blog
 
     @staticmethod
     def get_blog_by_status(status):
-        blog = Blog.objects.filter(status=status)
+        blog = Blog.objects.filter(status=status).order_by('-id')
         return True, blog
 
     @staticmethod
