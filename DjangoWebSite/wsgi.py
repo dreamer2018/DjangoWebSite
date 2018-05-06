@@ -16,10 +16,14 @@ from Blog.views import save_blog_from_api
 sched = Scheduler()
 
 
-@sched.interval_schedule(seconds=1)
+@sched.interval_schedule(seconds=3600)
 def mytask():
-    save_blog_from_api()
-    print "update blog"
+    try:
+        save_blog_from_api()
+    except Exception as e:
+        print "Error: %s" % str(e)
+    else:
+        print "update blog"
 
 
 sched.start()
