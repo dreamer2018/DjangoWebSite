@@ -7,6 +7,7 @@
 from django.shortcuts import HttpResponse
 from models import Enrolled
 import json
+import time as datetime
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -271,8 +272,6 @@ def add_enrolled(request):
         try:
             obj = int(request.POST['obj'])
             uid = int(request.POST['uid'])
-            date = request.POST['date']
-            time = request.POST['time']
         except Exception:
             rtu = {
                 'code': 104,
@@ -282,6 +281,8 @@ def add_enrolled(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
+            date = datetime.strftime('%Y-%m-%d', datetime.localtime(datetime.time()))
+            time = datetime.strftime('%H:%M:%S', datetime.localtime(datetime.time()))
             sta, eid = Enrolled.insert(obj=obj, uid=uid, date=date, time=time)
             rtu = {
                 'code': 100,
