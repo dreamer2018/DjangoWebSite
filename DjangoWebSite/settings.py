@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 from apscheduler.scheduler import Scheduler
+from Blog.views import save_blog_from_api
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -116,12 +117,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\', '/')
 
 
-
 sched = Scheduler()
 
 
 @sched.interval_schedule(seconds=1)
 def mytask():
-    print('Hello world!')
+    save_blog_from_api()
+    print "update blog"
 
 sched.start()

@@ -9,11 +9,14 @@ from models import Blog
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+import urllib2
+
 # Create your views here.
 
 # 定义分页宏
 REQ_PAGE = 1  # 请求页
 PAGE_SIZE = 20  # 页面大小
+GET_BLOG_APT = "http://blog.xiyoulinux.org/blogjson"
 
 
 # /blog/
@@ -288,7 +291,7 @@ def add_blog(request):
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, bid = Blog.insert(title=title,author=author, date=date, time=time, summary=summary, url=url, status=0)
+            sta, bid = Blog.insert(title=title, author=author, date=date, time=time, summary=summary, url=url, status=0)
             rtu = {
                 'code': 100,
                 'status': sta,
@@ -430,3 +433,44 @@ def pagination_tool(data, req_page, page_size):
     }
 
     return rtu
+
+def get_blog_from_api():
+    blogdata = urllib2.urlopen(GET_BLOG_APT)
+    if blogdata.code == 200:
+        html = blogdata.read()
+        html = html.decode('utf-8')
+        js = json.loads(html)
+        blogs = []
+        for i in js:
+            title = js[i]['Title']
+            author = js[i]['Author']
+            summary = js[i]['ArticleDetail']
+            url = js[i]['BlogArticleLink']
+            dt = js[i]['PubDate']
+            date = dt.split()[0]
+            time = dt.split()[1]
+            blog = {
+                'title': title,
+                'author': author,
+                'date': date.decode('ascii'),
+                'time': time.decode('ascii'),
+                'summary': summary,
+                'url': url
+            }
+            blogs.append(blog)
+        return blogs
+    return []
+
+
+def save_blog_from_api():
+    blogs = get_blog_from_api()
+    for blog in blogs:
+        title = blog['title']
+        author = blog['author']
+        date = blog['date']
+        time = blog['time']
+        summary = blog['summary']
+        url = blog['url']
+        status, blog_info = Blog.get_blog_by_title(title=title, sign=1)
+        if len(blog_info) == 0:
+            Blog.insert(title=title, author=author, date=date, time=time, summary=summary, url=url, status=1)
