@@ -5,10 +5,11 @@
 """
 
 from django.shortcuts import HttpResponse
-from models import News
+from News.models import News
 import json
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
 
 # 定义分页宏
 REQ_PAGE = 1  # 请求页
@@ -16,35 +17,70 @@ PAGE_SIZE = 20  # 页面大小
 
 
 # Create your views here.
+class RequestDispatcherView(APIView):
+    # 增加
+    def post(selfs, request):
+        return add_news(request)
+
+    # 删除
+    def delete(self, request):
+        return delete_news(request)
+
+    # 更改内容
+    def put(self, request):
+        return alter_news(request)
+
+    # 更改状态
+    def patch(self, request):
+        return alter_news_status(request)
+
+    # 获取
+    def get(self, request):
+        return get_news(request)
+
 
 # /news/
 def get_news(request):
     """/news/"""
-    if request.method == 'GET':
-        arg_count = 0
-        req_page = REQ_PAGE
-        page_size = PAGE_SIZE
+    arg_count = 0
+    req_page = REQ_PAGE
+    page_size = PAGE_SIZE
 
-        try:
-            if 'page' in request.GET.keys():
-                req_page = int(request.GET['page'])
-                arg_count += 1
-            if 'page_size' in request.GET.keys():
-                page_size = int(request.GET['page_size'])
-                arg_count += 1
-        except Exception:
-            # 参数错误
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid arguments!',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        if len(request.GET) - arg_count == 0:
-            return get_all_news(request, req_page, page_size)
-        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
-            # 参数错误
+    try:
+        if 'page' in request.GET.keys():
+            req_page = int(request.GET['page'])
+            arg_count += 1
+        if 'page_size' in request.GET.keys():
+            page_size = int(request.GET['page_size'])
+            arg_count += 1
+    except Exception:
+        # 参数错误
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid arguments!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    if len(request.GET) - arg_count == 0:
+        return get_all_news(request, req_page, page_size)
+    elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
+        # 参数错误
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if 'id' in request.GET.keys():
+            return get_news_by_id(request)
+        elif 'title' in request.GET.keys():
+            return get_news_by_title(request, page=req_page, page_size=page_size)
+        elif 'status' in request.GET.keys():
+            return get_news_by_status(request, page=req_page, page_size=page_size)
+        else:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -52,30 +88,6 @@ def get_news(request):
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
-        else:
-            if 'id' in request.GET.keys():
-                return get_news_by_id(request)
-            elif 'title' in request.GET.keys():
-                return get_news_by_title(request, page=req_page, page_size=page_size)
-            elif 'status' in request.GET.keys():
-                return get_news_by_status(request, page=req_page, page_size=page_size)
-            else:
-                rtu = {
-                    'code': 104,
-                    'status': False,
-                    'message': 'invalid argument',
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        # 请求方法错误
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'invalid argument',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
 
 
 # 获取所有的新闻
@@ -284,47 +296,37 @@ def get_news_by_status(request, page, page_size):
 def add_news(request):
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            title = request.POST['title']
-            content = request.POST['content']
-            origin = request.POST['origin']
-            date = request.POST['date']
-            time = request.POST['time']
-            labels = request.POST['labels']
-            poster = None
-            if 'poster' in request.POST.keys():
-                poster = request.POST['poster']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            if poster is not None:
-                sta, nid = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels,
-                                       poster=poster)
-            else:
-                sta, nid = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': 'success',
-                'data': {
-                    'id': nid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-
-    else:
+    try:
+        title = request.POST['title']
+        content = request.POST['content']
+        origin = request.POST['origin']
+        date = request.POST['date']
+        time = request.POST['time']
+        labels = request.POST['labels']
+        poster = None
+        if 'poster' in request.POST.keys():
+            poster = request.POST['poster']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if poster is not None:
+            sta, nid = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels,
+                                   poster=poster)
+        else:
+            sta, nid = News.insert(title=title, content=content, origin=origin, date=date, time=time, labels=labels)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': 'success',
+            'data': {
+                'id': nid
+            }
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
@@ -336,52 +338,44 @@ def alter_news(request):
     """/news/alter/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            nid = int(request.POST['nid'])
-            title = request.POST['title']
-            content = request.POST['content']
-            origin = request.POST['origin']
-            date = request.POST['date']
-            time = request.POST['time']
-            labels = request.POST['labels']
-            poster = None
-            if 'poster' in request.POST.keys():
-                poster = request.POST['poster']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            if poster is not None:
-                sta, message = News.update(nid=nid, title=title, content=content, origin=origin, date=date, time=time,
-                                           labels=labels,
-                                           poster=poster)
-            else:
-                sta, message = News.update(nid=nid, title=title, content=content, origin=origin, date=date, time=time,
-                                           labels=labels)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': message,
-                'data': {
-                    'id': nid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-    else:
+    try:
+        nid = int(request.data['nid'])
+        title = request.data['title']
+        content = request.data['content']
+        origin = request.data['origin']
+        date = request.data['date']
+        time = request.data['time']
+        labels = request.data['labels']
+        poster = None
+        if 'poster' in request.data.keys():
+            poster = request.data['poster']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
+    else:
+        if poster is not None:
+            sta, message = News.update(nid=nid, title=title, content=content, origin=origin, date=date, time=time,
+                                       labels=labels,
+                                       poster=poster)
+        else:
+            sta, message = News.update(nid=nid, title=title, content=content, origin=origin, date=date, time=time,
+                                       labels=labels)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': message,
+            'data': {
+                'id': nid
+            }
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
 
 
 # 更改新闻状态
@@ -390,52 +384,43 @@ def alter_news_status(request):
     """/news/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            nid = int(request.POST['nid'])
-        except Exception:
+    try:
+        nid = int(request.data['nid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, new = News.get_news_by_id(nid=nid)
+        if sta:
+            if new.status == 0:
+                new.status = 1
+                sta, message = News.update(nid=nid, status=1)
+            else:
+                new.status = 0
+                sta, message = News.update(nid=nid, status=0)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': new.status
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, new = News.get_news_by_id(nid=nid)
-            if sta:
-                if new.status == 0:
-                    new.status = 1
-                    sta, message = News.update(nid=nid, status=1)
-                else:
-                    new.status = 0
-                    sta, message = News.update(nid=nid, status=0)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': new.status
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': new
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': new
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 # 删除新闻
@@ -444,46 +429,37 @@ def delete_news(request):
     """/news/delete/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            nid = int(request.POST['nid'])
-        except Exception:
+    try:
+        nid = int(request.data['nid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, new = News.delete_news_by_id(nid=nid)
+        if sta:
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': new,
+                'data': {
+                    'id': nid
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, new = News.delete_news_by_id(nid=nid)
-            if sta:
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': new,
-                    'data': {
-                        'id': nid
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': new
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': new
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 def pagination_tool(data, req_page, page_size):

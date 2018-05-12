@@ -10,8 +10,14 @@ import os
 import time
 import json
 from django.conf import settings
+from rest_framework.views import APIView
+
 
 # Create your views here.
+class RequestDispatcherView(APIView):
+    # 增加
+    def post(selfs, request):
+        return upload(request)
 
 
 @csrf_exempt

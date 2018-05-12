@@ -2,10 +2,10 @@
 
 import string
 import random
-import urllib2
+import urllib.request as urllib2
 import urllib
 from django.http import HttpResponse, HttpResponseRedirect
-import cookielib
+import http.cookiejar as cookielib
 import json
 
 VERSION = "0.1"

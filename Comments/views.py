@@ -4,11 +4,12 @@
     Created by zhoupan on 04/20/18.
 """
 
-from django.shortcuts import render, HttpResponse, HttpResponseRedirect
+from django.shortcuts import HttpResponse
 from django.core.paginator import Paginator
-from models import Comments
+from Comments.models import Comments
 import json
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
 
 # 定义禁用与启用
 ALLOW = 1
@@ -31,70 +32,83 @@ PAGE_SIZE = 20  # 页面大小
 # Create your views here.
 
 
+class RequestDispatcherView(APIView):
+    # 增加
+    def post(selfs, request):
+        return add_comments(request)
+
+    # 删除
+    def delete(self, request):
+        return delete_comments(request)
+
+    # 更改状态
+    def patch(self, request):
+        return alter_comments_status(request)
+
+    # 更改信息
+    def put(self, request):
+        return alter_comments(request)
+
+    # 获取
+    def get(self, request):
+        return get_comments(request)
+
+
 # 获取评论信息
 def get_comments(request):
     """/comments/"""
-    if request.method == 'GET':
-        arg_count = 0
-        req_page = REQ_PAGE
-        page_size = PAGE_SIZE
+    arg_count = 0
+    req_page = REQ_PAGE
+    page_size = PAGE_SIZE
 
-        try:
-            if 'page' in request.GET.keys():
-                req_page = int(request.GET['page'])
-                arg_count += 1
-            if 'page_size' in request.GET.keys():
-                page_size = int(request.GET['page_size'])
-                arg_count += 1
-        except Exception:
-            # 参数错误
+    try:
+        if 'page' in request.GET.keys():
+            req_page = int(request.GET['page'])
+            arg_count += 1
+        if 'page_size' in request.GET.keys():
+            page_size = int(request.GET['page_size'])
+            arg_count += 1
+    except Exception:
+        # 参数错误
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid arguments!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    if len(request.GET) - arg_count == 0:
+        return get_all_comments(request, req_page, page_size)
+    elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
+        if len(
+                request.GET) - arg_count == 3 and 'type' in request.GET.keys() and 'obj' in request.GET.keys() \
+                and 'status' in request.GET.keys():
+            return get_comments_by_type_obj_status(request, req_page, page_size)
+        else:
             rtu = {
                 'code': 104,
                 'status': False,
-                'message': 'invalid arguments!',
+                'message': 'invalid argument',
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
-        if len(request.GET) - arg_count == 0:
-            return get_all_comments(request, req_page, page_size)
-        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
-            if len(
-                    request.GET) - arg_count == 3 and 'type' in request.GET.keys() and 'obj' in request.GET.keys() \
-                    and 'status' in request.GET.keys():
-                return get_comments_by_type_obj_status(request, req_page, page_size)
-            else:
-                rtu = {
-                    'code': 104,
-                    'status': False,
-                    'message': 'invalid argument',
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
+    else:
+        if 'id' in request.GET.keys():
+            return get_comments_by_id(request)
+        elif 'user' in request.GET.keys():
+            return get_comments_by_user(request, req_page, page_size)
+        elif 'type' in request.GET.keys():
+            return get_comments_by_type(request, req_page, page_size)
+        if 'obj' in request.GET.keys():
+            return get_comments_by_obj(request, req_page, page_size)
         else:
-            if 'id' in request.GET.keys():
-                return get_comments_by_id(request)
-            elif 'user' in request.GET.keys():
-                return get_comments_by_user(request, req_page, page_size)
-            elif 'type' in request.GET.keys():
-                return get_comments_by_type(request, req_page, page_size)
-            if 'obj' in request.GET.keys():
-                return get_comments_by_obj(request, req_page, page_size)
-            else:
-                rtu = {
-                    'code': 104,
-                    'status': False,
-                    'message': 'invalid argument',
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-
-    rtu = {
-        'code': 105,
-        'status': False,
-        'message': 'method error!',
-    }
-    js = json.dumps(rtu)
-    return HttpResponse(js)
+            rtu = {
+                'code': 104,
+                'status': False,
+                'message': 'invalid argument',
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 # 获取所有的评论信息
@@ -414,39 +428,30 @@ def get_comments_by_type_obj_status(request, page, page_size):
 def add_comments(request):
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            user = request.POST['user']
-            typ = request.POST['type']
-            obj = request.POST['obj']
-            content = request.POST['content']
-            date = request.POST['date']
-            time = request.POST['time']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            sta, cid = Comments.insert(user=user, o_type=typ, obj=obj, content=content, date=date, time=time)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': 'success',
-                'data': {
-                    'id': cid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-    else:
+    try:
+        user = request.POST['user']
+        typ = request.POST['type']
+        obj = request.POST['obj']
+        content = request.POST['content']
+        date = request.POST['date']
+        time = request.POST['time']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, cid = Comments.insert(user=user, o_type=typ, obj=obj, content=content, date=date, time=time)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': 'success',
+            'data': {
+                'id': cid
+            }
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
@@ -461,7 +466,7 @@ def delete_comments(request):
 
     if request.method == 'POST':
         try:
-            cid = int(request.POST['cid'])
+            cid = int(request.data['cid'])
         except Exception:
             rtu = {
                 'code': 104,
@@ -507,44 +512,37 @@ def alter_comments(request):
     """/comments/alter/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            cid = int(request.POST['cid'])
-            user = request.POST['user']
-            typ = request.POST['type']
-            obj = request.POST['obj']
-            content = request.POST['content']
-            date = request.POST['date']
-            time = request.POST['time']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            sta, message = Comments.update(cid=cid, user=user, o_type=typ, obj=obj, content=content, date=date,
-                                           time=time)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': message,
-                'data': {
-                    'id': cid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-    else:
+
+    try:
+        cid = int(request.data['cid'])
+        user = request.data['user']
+        typ = request.data['type']
+        obj = request.data['obj']
+        content = request.data['content']
+        date = request.data['date']
+        time = request.data['time']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
+    else:
+        sta, message = Comments.update(cid=cid, user=user, o_type=typ, obj=obj, content=content, date=date,
+                                       time=time)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': message,
+            'data': {
+                'id': cid
+            }
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
 
 
 # 更改deal状态
@@ -607,52 +605,44 @@ def alter_comments_status(request):
     """/comments/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            cid = int(request.POST['cid'])
-        except Exception:
+
+    try:
+        cid = int(request.data['cid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, comments = Comments.get_comment_by_id(cid=cid)
+        if sta:
+            if comments.status == 0:
+                comments.status = 1
+                sta, message = Comments.update(cid=cid, status=1)
+            else:
+                comments.status = 0
+                sta, message = comments.update(cid=cid, status=0)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': comments.status
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, comments = Comments.get_comment_by_id(cid=cid)
-            if sta:
-                if comments.status == 0:
-                    comments.status = 1
-                    sta, message = Comments.update(cid=cid, status=1)
-                else:
-                    comments.status = 0
-                    sta, message = comments.update(cid=cid, status=0)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': comments.status
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': comments
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': comments
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 def pagination_tool(data, req_page, page_size):

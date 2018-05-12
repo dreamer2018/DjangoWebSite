@@ -21,9 +21,9 @@ def mytask():
     try:
         save_blog_from_api()
     except Exception as e:
-        print "Error: %s" % str(e)
+        print("Error: %s" % str(e))
     else:
-        print "update blog"
+        print("update blog")
 
 
 sched.start()

@@ -5,11 +5,12 @@
 """
 
 from django.shortcuts import HttpResponse
-from models import Blog
+from Blog.models import Blog
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
-import urllib2
+import urllib.request as urllib2
+from rest_framework.views import APIView
 
 # Create your views here.
 
@@ -17,6 +18,24 @@ import urllib2
 REQ_PAGE = 1  # 请求页
 PAGE_SIZE = 20  # 页面大小
 GET_BLOG_APT = "http://blog.xiyoulinux.org/blogjson"
+
+
+class RequestDispatcherView(APIView):
+    # 获取
+    def get(self, request):
+        return get_blog(request)
+
+    # 增加
+    def post(selfs, request):
+        return add_blog(request)
+
+    # 更改状态
+    def patch(self, request):
+        return alter_blog_status(request)
+
+    # 删除
+    def delete(self, request):
+        return delete_blog(request)
 
 
 # /blog/
@@ -319,52 +338,44 @@ def alter_blog_status(request):
     """/blog/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            bid = int(request.POST['bid'])
-        except Exception:
+    try:
+        bid = int(request.data['bid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, blog = Blog.get_blog_by_id(bid=bid)
+        if sta:
+            if blog.status == 0:
+                blog.status = 1
+                sta, message = Blog.alter_blog_status(bid=bid, status=1)
+            else:
+                blog.status = 0
+                sta, message = Blog.alter_blog_status(bid=bid, status=0)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': blog.status
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, blog = Blog.get_blog_by_id(bid=bid)
-            if sta:
-                if blog.status == 0:
-                    blog.status = 1
-                    sta, message = Blog.alter_blog_status(bid=bid, status=1)
-                else:
-                    blog.status = 0
-                    sta, message = Blog.alter_blog_status(bid=bid, status=0)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': blog.status
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': blog
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': blog
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
+
 
 
 # 删除新闻
@@ -373,47 +384,38 @@ def delete_blog(request):
     """/blog/delete/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            bid = int(request.POST['bid'])
-        except Exception:
+
+    try:
+        bid = int(request.data['bid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, blog = Blog.delete_blog_by_id(bid=bid)
+        if sta:
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': blog,
+                'data': {
+                    'id': bid
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, blog = Blog.delete_blog_by_id(bid=bid)
-            if sta:
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': blog,
-                    'data': {
-                        'id': bid
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': blog
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
-
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': blog
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 def pagination_tool(data, req_page, page_size):
     if page_size <= 0:  # 页面大小小于0，设置页面大小为1
@@ -433,6 +435,7 @@ def pagination_tool(data, req_page, page_size):
     }
 
     return rtu
+
 
 def get_blog_from_api():
     blogdata = urllib2.urlopen(GET_BLOG_APT)

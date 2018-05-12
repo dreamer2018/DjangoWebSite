@@ -6,10 +6,10 @@
 
 from django.shortcuts import HttpResponse
 from django.core.paginator import Paginator
-from models import Projects
+from Projects.models import Projects
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+from rest_framework.views import APIView
 # Create your views here.
 
 # 定义分页宏
@@ -18,35 +18,70 @@ PAGE_SIZE = 20  # 页面大小
 
 
 # Create your views here.
+class RequestDispatcherView(APIView):
+    # 增加
+    def post(selfs, request):
+        return add_projects(request)
+
+    # 删除
+    def delete(self, request):
+        return delete_projects(request)
+
+    # 更改内容
+    def put(self, request):
+        return alter_projects(request)
+
+    # 更改状态
+    def patch(self, request):
+        return alter_projects_status(request)
+
+    # 获取
+    def get(self, request):
+        return get_projects(request)
+
+
 # 获取项目信息
 def get_projects(request):
     """/projects/"""
-    if request.method == 'GET':
+    arg_count = 0
+    req_page = REQ_PAGE
+    page_size = PAGE_SIZE
 
-        arg_count = 0
-        req_page = REQ_PAGE
-        page_size = PAGE_SIZE
+    try:
+        if 'page' in request.GET.keys():
+            req_page = int(request.GET['page'])
+            arg_count += 1
+        if 'page_size' in request.GET.keys():
+            page_size = int(request.GET['page_size'])
+            arg_count += 1
+    except Exception:
+        # 参数错误
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid arguments!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
 
-        try:
-            if 'page' in request.GET.keys():
-                req_page = int(request.GET['page'])
-                arg_count += 1
-            if 'page_size' in request.GET.keys():
-                page_size = int(request.GET['page_size'])
-                arg_count += 1
-        except Exception:
-            # 参数错误
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid arguments!',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-
-        if len(request.GET) - arg_count == 0:
-            return get_all_projects(request, page=req_page, page_size=page_size)
-        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
+    if len(request.GET) - arg_count == 0:
+        return get_all_projects(request, page=req_page, page_size=page_size)
+    elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if 'id' in request.GET.keys():
+            return get_projects_by_id(request)
+        elif 'title' in request.GET.keys():
+            return get_projects_by_title(request, page=req_page, page_size=page_size)
+        elif 'status' in request.GET.keys():
+            return get_projects_by_status(request, page=req_page, page_size=page_size)
+        else:
             rtu = {
                 'code': 104,
                 'status': False,
@@ -54,28 +89,6 @@ def get_projects(request):
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
-        else:
-            if 'id' in request.GET.keys():
-                return get_projects_by_id(request)
-            elif 'title' in request.GET.keys():
-                return get_projects_by_title(request, page=req_page, page_size=page_size)
-            elif 'status' in request.GET.keys():
-                return get_projects_by_status(request, page=req_page, page_size=page_size)
-            else:
-                rtu = {
-                    'code': 104,
-                    'status': False,
-                    'message': 'invalid argument',
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    rtu = {
-        'code': 105,
-        'status': False,
-        'message': 'method error!',
-    }
-    js = json.dumps(rtu)
-    return HttpResponse(js)
 
 
 # 获取所有的项目信息
@@ -279,49 +292,39 @@ def get_projects_by_status(request, page, page_size):
 def add_projects(request):
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            title = request.POST['title']
-            content = request.POST['content']
-            origin = request.POST['origin']
-            link = request.POST['link']
-            date = request.POST['date']
-            time = request.POST['time']
-            author = request.POST['author']
-            poster = None
-            if 'poster' in request.POST.keys():
-                poster = request.POST['poster']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            if poster is not None:
-                sta, pid = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
-                                           time=time, author=author, poster=poster)
-            else:
-                sta, pid = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
-                                           time=time, author=author)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': 'success',
-                'data': {
-                    'id': pid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-
-    else:
+    try:
+        title = request.POST['title']
+        content = request.POST['content']
+        origin = request.POST['origin']
+        link = request.POST['link']
+        date = request.POST['date']
+        time = request.POST['time']
+        author = request.POST['author']
+        poster = None
+        if 'poster' in request.POST.keys():
+            poster = request.POST['poster']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        if poster is not None:
+            sta, pid = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
+                                       time=time, author=author, poster=poster)
+        else:
+            sta, pid = Projects.insert(title=title, content=content, origin=origin, link=link, date=date,
+                                       time=time, author=author)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': 'success',
+            'data': {
+                'id': pid
+            }
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
@@ -333,53 +336,43 @@ def alter_projects(request):
     """/projects/alter/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            pid = int(request.POST['pid'])
-            title = request.POST['title']
-            content = request.POST['content']
-            origin = request.POST['origin']
-            link = request.POST['link']
-            date = request.POST['date']
-            time = request.POST['time']
-            author = request.POST['author']
-            poster = None
-            if 'poster' in request.POST.keys():
-                poster = request.POST['poster']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            if poster is not None:
-                sta, message = Projects.update(pid=pid, title=title, content=content, origin=origin, link=link,
-                                               date=date, time=time, poster=poster, author=author)
-            else:
-                sta, message = Projects.update(pid=pid, title=title, content=content, origin=origin, link=link,
-                                               date=date, time=time, author=author)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': message,
-                'data': {
-                    'id': pid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-    else:
+    try:
+        pid = int(request.data['pid'])
+        title = request.data['title']
+        content = request.data['content']
+        origin = request.data['origin']
+        link = request.data['link']
+        date = request.data['date']
+        time = request.data['time']
+        author = request.data['author']
+        poster = None
+        if 'poster' in request.data.keys():
+            poster = request.data['poster']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
-
+    else:
+        if poster is not None:
+            sta, message = Projects.update(pid=pid, title=title, content=content, origin=origin, link=link,
+                                           date=date, time=time, poster=poster, author=author)
+        else:
+            sta, message = Projects.update(pid=pid, title=title, content=content, origin=origin, link=link,
+                                           date=date, time=time, author=author)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': message,
+            'data': {
+                'id': pid
+            }
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
 
 # 更改项目状态
 @csrf_exempt
@@ -387,52 +380,43 @@ def alter_projects_status(request):
     """/projects/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            pid = int(request.POST['pid'])
-        except Exception:
+    try:
+        pid = int(request.data['pid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, projects = Projects.get_project_by_id(pid=pid)
+        if sta:
+            if projects.status == 0:
+                projects.status = 1
+                sta, message = projects.update(pid=pid, status=1)
+            else:
+                projects.status = 0
+                sta, message = projects.update(pid=pid, status=0)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': projects.status
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, projects = Projects.get_project_by_id(pid=pid)
-            if sta:
-                if projects.status == 0:
-                    projects.status = 1
-                    sta, message = projects.update(pid=pid, status=1)
-                else:
-                    projects.status = 0
-                    sta, message = projects.update(pid=pid, status=0)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': projects.status
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': projects
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': projects
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 # 删除新闻
@@ -441,47 +425,37 @@ def delete_projects(request):
     """/projects/delete/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-
-    if request.method == 'POST':
-        try:
-            pid = int(request.POST['pid'])
-        except Exception:
+    try:
+        pid = int(request.data['pid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, projects = Projects.delete_project_by_id(pid=pid)
+        if sta:
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': projects,
+                'data': {
+                    'id': pid
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, projects = Projects.delete_project_by_id(pid=pid)
-            if sta:
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': projects,
-                    'data': {
-                        'id': pid
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': projects
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)  # 判断用户是否登录
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': projects
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 def pagination_tool(data, req_page, page_size):

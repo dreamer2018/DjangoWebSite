@@ -5,11 +5,12 @@
 """
 
 from django.shortcuts import HttpResponse
-from models import Enrolled
+from Enrolled.models import Enrolled
 import json
 import time as datetime
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
 
 # Create your views here.
 
@@ -18,6 +19,27 @@ from django.views.decorators.csrf import csrf_exempt
 REQ_PAGE = 1  # 请求页
 PAGE_SIZE = 20  # 页面大小
 
+
+class RequestDispatcherView(APIView):
+    # 增加
+    def post(selfs, request):
+        return add_enrolled(request)
+
+    # 删除
+    def delete(self, request):
+        return delete_enrolled(request)
+
+    # 更改状态
+    def patch(self, request):
+        return alter_enrolled_status(request)
+
+    # 更改信息
+    def put(self, request):
+        return alter_enrolled(request)
+
+    # 获取
+    def get(self, request):
+        return get_enrolled(request)
 
 # 获取报名记录
 def get_enrolled(request):
@@ -268,40 +290,33 @@ def get_enrolled_by_status(request, page, page_size):
 def add_enrolled(request):
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            obj = int(request.POST['obj'])
-            uid = int(request.POST['uid'])
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument!',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            date = datetime.strftime('%Y-%m-%d', datetime.localtime(datetime.time()))
-            time = datetime.strftime('%H:%M:%S', datetime.localtime(datetime.time()))
-            sta, eid = Enrolled.insert(obj=obj, uid=uid, date=date, time=time)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': 'success',
-                'data': {
-                    'id': eid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-    else:
+
+    try:
+        obj = int(request.POST['obj'])
+        uid = int(request.POST['uid'])
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument!',
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
+    else:
+        date = datetime.strftime('%Y-%m-%d', datetime.localtime(datetime.time()))
+        time = datetime.strftime('%H:%M:%S', datetime.localtime(datetime.time()))
+        sta, eid = Enrolled.insert(obj=obj, uid=uid, date=date, time=time)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': 'success',
+            'data': {
+                'id': eid
+            }
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+
 
 
 # 更改反馈状态
@@ -310,57 +325,48 @@ def alter_enrolled(request):
     """/enrolled/alter/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            eid = int(request.POST['eid'])
-            obj = int(request.POST['obj'])
-            uid = int(request.POST['uid'])
-            date = request.POST['date']
-            time = request.POST['time']
-            status = None
-            if 'status' in request.POST.keys():
-                status = int(request.POST['status'])
-        except Exception:
+    try:
+        eid = int(request.data['eid'])
+        obj = int(request.data['obj'])
+        uid = int(request.data['uid'])
+        date = request.data['date']
+        time = request.data['time']
+        status = None
+        if 'status' in request.data.keys():
+            status = int(request.data['status'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, enrolled = Enrolled.get_enrolled_by_id(eid=eid)
+        if sta:
+            if status is not None:
+                sta, message = Enrolled.update(eid=eid, obj=obj, uid=uid, date=date, time=time, status=status)
+            else:
+                sta, message = Enrolled.update(eid=eid, obj=obj, uid=uid, date=date, time=time)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': enrolled.id
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, enrolled = Enrolled.get_enrolled_by_id(eid=eid)
-            if sta:
-                if status is not None:
-                    sta, message = Enrolled.update(eid=eid, obj=obj, uid=uid, date=date, time=time, status=status)
-                else:
-                    sta, message = Enrolled.update(eid=eid, obj=obj, uid=uid, date=date, time=time)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': enrolled.id
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': enrolled
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': enrolled
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 # 更改活动状态
@@ -369,52 +375,43 @@ def alter_enrolled_status(request):
     """/events/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            eid = int(request.POST['eid'])
-        except Exception:
+    try:
+        eid = int(request.data['eid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, enrolled = Enrolled.get_enrolled_by_id(eid=eid)
+        if sta:
+            if enrolled.status == 0:
+                enrolled.status = 1
+                sta, message = Enrolled.update(eid=eid, status=1)
+            else:
+                enrolled.status = 0
+                sta, message = Enrolled.update(eid=eid, status=0)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': enrolled.status
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, enrolled = Enrolled.get_enrolled_by_id(eid=eid)
-            if sta:
-                if enrolled.status == 0:
-                    enrolled.status = 1
-                    sta, message = Enrolled.update(eid=eid, status=1)
-                else:
-                    enrolled.status = 0
-                    sta, message = Enrolled.update(eid=eid, status=0)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': enrolled.status
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': enrolled
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': enrolled
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 # 删除报名信息
@@ -423,47 +420,37 @@ def delete_enrolled(request):
     """/enrolled/delete/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            eid = int(request.POST['eid'])
-        except Exception:
+    try:
+        eid = int(request.data['eid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, enrolled = Enrolled.delete_enrolled_by_id(eid=eid)
+        if sta:
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': enrolled,
+                'data': {
+                    'id': eid
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, enrolled = Enrolled.delete_enrolled_by_id(eid=eid)
-            if sta:
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': enrolled,
-                    'data': {
-                        'id': eid
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': enrolled
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
-
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': enrolled
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 def pagination_tool(data, req_page, page_size):
     if page_size <= 0:  # 页面大小小于0，设置页面大小为1

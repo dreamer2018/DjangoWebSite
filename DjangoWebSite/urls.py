@@ -13,14 +13,14 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
-from django.conf.urls import include, url, patterns
+from django.conf.urls import include, url
 from django.contrib import admin
 from Users import views
 from django.conf.urls.static import static
 from django.conf import settings
 
 
-urlpatterns = patterns('',
+urlpatterns = [
                        url(r'^', include("Users.urls", namespace="user")),
                        url(r'^admin/', include(admin.site.urls)),
                        url(r'^blog/', include('Blog.urls', namespace='blog')),
@@ -31,8 +31,8 @@ urlpatterns = patterns('',
                        url(r'^news/', include('News.urls', namespace='news')),
                        url(r'^pictures/', include('Pictures.urls', namespace='pictures')),
                        url(r'^projects/', include('Projects.urls', namespace='projects')),
-                       url(r'^upload/', include('FileUpLoad.urls', namespace='projects')),
-                       ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+                       url(r'^upload/', include('FileUpLoad.urls', namespace='upload')),
+                       ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler403 = views.permission_denied
 handler404 = views.page_not_found

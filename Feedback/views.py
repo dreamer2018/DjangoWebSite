@@ -6,10 +6,10 @@
 
 from django.shortcuts import HttpResponse
 from django.core.paginator import Paginator
-from models import Feedback
+from Feedback.models import Feedback
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+from rest_framework.views import APIView
 # Create your views here.
 
 # 定义分页宏
@@ -17,56 +17,66 @@ REQ_PAGE = 1  # 请求页
 PAGE_SIZE = 20  # 页面大小
 
 
+class RequestDispatcherView(APIView):
+    # 增加
+    def post(selfs, request):
+        return add_feedback(request)
+
+    # 删除
+    def delete(self, request):
+        return delete_feedback(request)
+
+    # 更改状态
+    def patch(self, request):
+        return alter_feedback_status(request)
+
+    # 获取
+    def get(self, request):
+        return get_feedback(request)
+
+
 # 获取反馈信息
 def get_feedback(request):
     """/feedback/"""
-    if request.method == 'GET':
-        arg_count = 0
-        req_page = REQ_PAGE
-        page_size = PAGE_SIZE
+    arg_count = 0
+    req_page = REQ_PAGE
+    page_size = PAGE_SIZE
 
-        try:
-            if 'page' in request.GET.keys():
-                req_page = int(request.GET['page'])
-                arg_count += 1
-            if 'page_size' in request.GET.keys():
-                page_size = int(request.GET['page_size'])
-                arg_count += 1
-        except Exception:
-            # 参数错误
+    try:
+        if 'page' in request.GET.keys():
+            req_page = int(request.GET['page'])
+            arg_count += 1
+        if 'page_size' in request.GET.keys():
+            page_size = int(request.GET['page_size'])
+            arg_count += 1
+    except Exception:
+        # 参数错误
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid arguments!',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    if len(request.GET) - arg_count == 0:
+        return get_all_feedback(request, page=req_page, page_size=page_size)
+    elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
+        pass
+    else:
+        if 'id' in request.GET.keys():
+            return get_feedback_by_id(request)
+        elif 'content' in request.GET.keys():
+            return get_feedback_by_content(request, page=req_page, page_size=page_size)
+        elif 'status' in request.GET.keys():
+            return get_feedback_by_status(request, page=req_page, page_size=page_size)
+        else:
             rtu = {
                 'code': 104,
                 'status': False,
-                'message': 'invalid arguments!',
+                'message': 'invalid argument',
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
-        if len(request.GET) - arg_count == 0:
-            return get_all_feedback(request, page=req_page, page_size=page_size)
-        elif len(request.GET) - arg_count > 1 or len(request.GET) - arg_count < 0:
-            pass
-        else:
-            if 'id' in request.GET.keys():
-                return get_feedback_by_id(request)
-            elif 'content' in request.GET.keys():
-                return get_feedback_by_content(request, page=req_page, page_size=page_size)
-            elif 'status' in request.GET.keys():
-                return get_feedback_by_status(request, page=req_page, page_size=page_size)
-            else:
-                rtu = {
-                    'code': 104,
-                    'status': False,
-                    'message': 'invalid argument',
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    rtu = {
-        'code': 105,
-        'status': False,
-        'message': 'method error!',
-    }
-    js = json.dumps(rtu)
-    return HttpResponse(js)
 
 
 # 获取所有的反馈信息
@@ -245,37 +255,28 @@ def get_feedback_by_status(request, page, page_size):
 def add_feedback(request):
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            content = request.POST['content']
-            email = request.POST['email']
-            date = request.POST['date']
-            time = request.POST['time']
-        except Exception:
-            rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-        else:
-            sta, fid = Feedback.insert(content=content, email=email, date=date, time=time)
-            rtu = {
-                'code': 100,
-                'status': sta,
-                'message': 'success',
-                'data': {
-                    'id': fid
-                }
-            }
-            js = json.dumps(rtu)
-            return HttpResponse(js)
-    else:
+    try:
+        content = request.POST['content']
+        email = request.POST['email']
+        date = request.POST['date']
+        time = request.POST['time']
+    except Exception:
         rtu = {
-            'code': 105,
+            'code': 104,
             'status': False,
-            'message': 'method error!',
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, fid = Feedback.insert(content=content, email=email, date=date, time=time)
+        rtu = {
+            'code': 100,
+            'status': sta,
+            'message': 'success',
+            'data': {
+                'id': fid
+            }
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
@@ -287,53 +288,43 @@ def alter_feedback_status(request):
     """/feedback/status/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-    if request.method == 'POST':
-        try:
-            fid = int(request.POST['fid'])
-        except Exception:
+    try:
+        fid = int(request.data['fid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, feedback = Feedback.get_feedback_by_id(fid=fid)
+        if sta:
+            if feedback.status == 0:
+                feedback.status = 1
+                sta, message = Feedback.update(fid=fid, status=1)
+            else:
+                feedback.status = 0
+                sta, message = Feedback.update(fid=fid, status=0)
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': message,
+                'data': {
+                    'status': feedback.status
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, feedback = Feedback.get_feedback_by_id(fid=fid)
-            if sta:
-                if feedback.status == 0:
-                    feedback.status = 1
-                    sta, message = Feedback.update(fid=fid, status=1)
-                else:
-                    feedback.status = 0
-                    sta, message = Feedback.update(fid=fid, status=0)
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': message,
-                    'data': {
-                        'status': feedback.status
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': feedback
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
-
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': feedback
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 # 删除反馈
 @csrf_exempt
@@ -341,47 +332,37 @@ def delete_feedback(request):
     """/feedback/delete/"""
     # if not is_login(request)[0]:
     #     return HttpResponseRedirect('/login/?next=' + request.path)
-
-    if request.method == 'POST':
-        try:
-            fid = int(request.POST['fid'])
-        except Exception:
+    try:
+        fid = int(request.data['fid'])
+    except Exception:
+        rtu = {
+            'code': 104,
+            'status': False,
+            'message': 'invalid argument',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        sta, feedback = Feedback.delete_feedback_by_id(fid=fid)
+        if sta:
             rtu = {
-                'code': 104,
-                'status': False,
-                'message': 'invalid argument',
+                'code': 100,
+                'status': sta,
+                'message': feedback,
+                'data': {
+                    'id': fid
+                }
             }
             js = json.dumps(rtu)
             return HttpResponse(js)
         else:
-            sta, feedback = Feedback.delete_feedback_by_id(fid=fid)
-            if sta:
-                rtu = {
-                    'code': 100,
-                    'status': sta,
-                    'message': feedback,
-                    'data': {
-                        'id': fid
-                    }
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-            else:
-                rtu = {
-                    'code': 106,
-                    'status': sta,
-                    'message': feedback
-                }
-                js = json.dumps(rtu)
-                return HttpResponse(js)
-    else:
-        rtu = {
-            'code': 105,
-            'status': False,
-            'message': 'method error!',
-        }
-        js = json.dumps(rtu)
-        return HttpResponse(js)
+            rtu = {
+                'code': 106,
+                'status': sta,
+                'message': feedback
+            }
+            js = json.dumps(rtu)
+            return HttpResponse(js)
 
 
 def pagination_tool(data, req_page, page_size):

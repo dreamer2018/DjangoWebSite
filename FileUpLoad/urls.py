@@ -4,11 +4,10 @@
     Created by ZhouPan at 2018/5/2.
 """
 
+from django.conf.urls import url
 
-from django.conf.urls import patterns, url
+from FileUpLoad import views
 
-import views
-
-urlpatterns = patterns('',
-                       url(r'^$', views.upload),
-                       )
+urlpatterns = [
+    url(r'^$', views.RequestDispatcherView.as_view()),
+]

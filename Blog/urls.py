@@ -5,13 +5,10 @@
 """
 
 
-from django.conf.urls import patterns, url
-import views
+from django.conf.urls import url
+from Blog import views
 
 
-urlpatterns = patterns('',
-                       url(r'^$', views.get_blog),  # /blog/
-                       url(r'^add/$', views.add_blog),  # /blog/add
-                       url(r'^status/$', views.alter_blog_status),  # /blog/status/
-                       url(r'^delete/$', views.delete_blog),  # /blog/delete/
-                       )
+urlpatterns = [
+    url(r'^$', views.RequestDispatcherView.as_view()),
+]
