@@ -11,6 +11,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from Users.OAuth_Django_SDK import combine_url, GET_USER_INFO_URL
 import urllib
+import urllib.request as urllib2
 from rest_framework.views import APIView
 
 # Create your views here.
@@ -566,9 +567,9 @@ def get_current_user_info(request):
             'access_token': access_token
         }
         url = combine_url(GET_USER_INFO_URL, data)
-        params = urllib.unquote(url)
+        params = urllib2.unquote(url)
         try:
-            response = urllib.urlopen(params)
+            response = urllib2.urlopen(params)
         except IOError:
             rtu = {
                 'code': 101,
@@ -622,9 +623,9 @@ def get_all_user_info(request):
         access_token = request.session['access_token']
         url = "https://api.xiyoulinux.org/users?page=%d&per_page=%d&access_token=%s" % (
             req_page, page_size, access_token)
-        params = urllib.unquote(url)
+        params = urllib2.unquote(url)
         try:
-            response = urllib.urlopen(params)
+            response = urllib2.urlopen(params)
         except IOError:
             rtu = {
                 'code': 101,
@@ -675,9 +676,9 @@ def get_user_by_id(request):
     if 'login' in request.session.keys() and request.session['login']:
         access_token = request.session['access_token']
         url = "https://api.xiyoulinux.org/users/%s?access_token=%s" % (request.GET['id'], access_token)
-        params = urllib.unquote(url)
+        params = urllib2.unquote(url)
         try:
-            response = urllib.urlopen(params)
+            response = urllib2.urlopen(params)
         except IOError:
             rtu = {
                 'code': 101,
@@ -713,9 +714,9 @@ def is_login(request):
             'access_token': access_token
         }
         url = combine_url(GET_USER_INFO_URL, data)
-        params = urllib.unquote(url)
+        params = urllib2.unquote(url)
         try:
-            urllib.urlopen(params)
+            urllib2.urlopen(params)
         except IOError:
             request.session['login'] = False
             return False, 'login out of time!'
