@@ -15,5 +15,5 @@ urlpatterns = [
     url(r'^user/$', views.get_all_user_info),
     url(r'^user/id/$', views.get_user_by_id),
     url(r'^login/$', OAuth_Django_SDK.oauth_login),  # /login/
-    url(r'^islogin/$', views.is_login),  # /login/
+    url(r'^islogin/$', views.is_login),  # /islogin/
 ]

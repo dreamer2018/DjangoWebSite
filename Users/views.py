@@ -1043,7 +1043,7 @@ def alter_devgroup(request):
 
 
 def is_login(request):
-    if request.session['login']:
+    if authorizations(request):
         rtu = {
             'code': 100,
             'status': True,
@@ -1059,3 +1059,10 @@ def is_login(request):
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
+
+
+def authorizations(request):
+    if 'login' in request.session.keys() and request.session['login']:
+        return True
+    else:
+        return False
