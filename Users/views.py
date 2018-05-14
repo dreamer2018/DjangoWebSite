@@ -1053,7 +1053,7 @@ def is_login(request):
         return HttpResponse(js)
     else:
         rtu = {
-            'code': 100,
+            'code': 107,
             'status': False,
             'message': 'not login',
         }
