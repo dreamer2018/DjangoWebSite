@@ -65,7 +65,7 @@ def oauth_callback(request, next=None):
         "code": code
     }
     # url编码
-    data = urllib.urlencode(requestString)
+    data = urllib.parse.urlencode(requestString)
     # 定义http头部信息
     header = {
         'Content-Type': 'application/x-www-form-urlencoded'
