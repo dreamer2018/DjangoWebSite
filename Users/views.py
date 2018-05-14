@@ -1040,3 +1040,22 @@ def alter_devgroup(request):
         }
         js = json.dumps(rtu)
         return HttpResponse(js)
+
+
+def is_login(request):
+    if request.session['login']:
+        rtu = {
+            'code': 100,
+            'status': True,
+            'message': 'already login',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
+    else:
+        rtu = {
+            'code': 100,
+            'status': False,
+            'message': 'not login',
+        }
+        js = json.dumps(rtu)
+        return HttpResponse(js)
