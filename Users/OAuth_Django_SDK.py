@@ -33,7 +33,7 @@ def oauth_login(request):
         request_data = {
             "response_type": "code",
             "client_id": APPID,
-            "redirect_uri": urllib.unquote(CALLBACK),
+            "redirect_uri": urllib2.unquote(CALLBACK),
             "state": state,
             "scope": SCOPE
         }
@@ -60,7 +60,7 @@ def oauth_callback(request, next=None):
     requestString = {
         "grant_type": "authorization_code",
         "client_id": APPID,
-        "redirect_uri": urllib.unquote(CALLBACK),
+        "redirect_uri": urllib2.unquote(CALLBACK),
         "client_secret": APPKEY,
         "code": code
     }
@@ -100,8 +100,8 @@ def get_user_info(request):
         'access_token': access_token
     }
     url = combine_url(GET_USER_INFO_URL, data)
-    params = urllib.unquote(url)
-    response = urllib.urlopen(params)
+    params = urllib2.unquote(url)
+    response = urllib2.urlopen(params)
     dict = json.loads(response.read())
     request.session['user'] = dict['id']
     request.session['login'] = True
