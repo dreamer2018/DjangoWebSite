@@ -15,7 +15,7 @@ GET_USER_INFO_URL = "https://api.xiyoulinux.org/me"
 
 APPID = 'py_develop'
 APPKEY = '$2y$10$WqIwkVhwMrs2cAPkBRyp1uEPpoP2oh1mH'
-CALLBACK = 'http://localhost/apis/login/'
+CALLBACK = 'http://localhost:8000/login/'
 ERRORREPORT = True  # 是否调试.
 SCOPE = 'all'
 
