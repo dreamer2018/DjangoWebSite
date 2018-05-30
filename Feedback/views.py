@@ -259,7 +259,7 @@ def add_feedback(request):
     try:
         content = request.POST['content']
         email = request.POST['email']
-        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
         time = datetime.datetime.now().strftime("%H:%M:%S")
     except Exception:
         rtu = {
