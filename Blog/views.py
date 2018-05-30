@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 import urllib.request as urllib2
 from rest_framework.views import APIView
+from Users.views import authorizations
 
 # Create your views here.
 
@@ -21,8 +22,10 @@ GET_BLOG_APT = "http://blog.xiyoulinux.org/blogjson"
 
 
 class RequestDispatcherView(APIView):
+
     # 获取
     def get(self, request):
+        print(authorizations(request))
         return get_blog(request)
 
     # 增加

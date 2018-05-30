@@ -10,6 +10,7 @@ from Feedback.models import Feedback
 import json
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
+import datetime
 # Create your views here.
 
 # 定义分页宏
@@ -258,8 +259,8 @@ def add_feedback(request):
     try:
         content = request.POST['content']
         email = request.POST['email']
-        date = request.POST['date']
-        time = request.POST['time']
+        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        time = datetime.datetime.now().strftime("%H:%M:%S")
     except Exception:
         rtu = {
             'code': 104,
