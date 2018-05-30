@@ -18,6 +18,9 @@ PAGE_SIZE = 20  # 页面大小
 
 # Create your views here.
 class RequestDispatcherView(APIView):
+    def __init__(self):
+        pass
+
     # 增加
     def post(selfs, request):
         return add_news(request)
@@ -37,7 +40,6 @@ class RequestDispatcherView(APIView):
     # 获取
     def get(self, request):
         return get_news(request)
-
 
 # /news/
 def get_news(request):
